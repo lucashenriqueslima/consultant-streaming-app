@@ -49,5 +49,4 @@ class ContatoController extends Controller
             ]);
         }
     }
-
 }
