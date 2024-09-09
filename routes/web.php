@@ -11,7 +11,6 @@ Route::get('dashboard', App\Livewire\Home::class)
     ->name('dashboard');
 
 Route::get('/', App\Livewire\Home::class)
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+    ->middleware(['auth', 'verified']);
 
 require __DIR__ . '/auth.php';
