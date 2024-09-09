@@ -62,6 +62,26 @@ return [
             ]) : [],
         ],
 
+        'ileva_solidy' => [
+            'driver' => 'mysql',
+            'url' => env('ILEVA_SOLIDY_DB_URL'),
+            'host' => env('ILEVA_SOLIDY_DB_HOST', '127.0.0.1'),
+            'port' => env('ILEVA_SOLIDY_DB_PORT', '3306'),
+            'database' => env('ILEVA_SOLIDY_DB_DATABASE', 'laravel'),
+            'username' => env('ILEVA_SOLIDY_DB_USERNAME', 'root'),
+            'password' => env('ILEVA_SOLIDY_DB_PASSWORD', ''),
+            'unix_socket' => env('ILEVA_SOLIDY_DB_SOCKET', ''),
+            'charset' => env('ILEVA_SOLIDY_DB_CHARSET', 'utf8mb4'),
+            'collation' => env('ILEVA_SOLIDY_DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => false,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),
@@ -147,7 +167,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
         ],
 
         'default' => [

@@ -1,8 +1,7 @@
 <header class='flex py-4 px-4 sm:px-10 font-[sans-serif] min-h-[70px] tracking-wide relative z-50'>
     <div class='m-auto xl:max-w-[1280px] xl:px-[50px] flex flex-wrap items-center gap-5 w-full'>
-        <a href="{{ url('/') }}"><img src="{{ asset('assets/img/logo.svg') }}" alt="logo" class='w-36' /></a>
 
-        <div 
+        <div
             class='max-lg:hidden lg:!block max-lg:w-full max-lg:fixed max-lg:before:fixed max-lg:before:bg-black max-lg:before:opacity-50 max-lg:before:inset-0 max-lg:before:z-50'>
             <button id="toggleClose" class='lg:hidden fixed top-4 right-3 z-[100] rounded-full bg-white p-3'>
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 fill-black" viewBox="0 0 320.591 320.591">
