@@ -10,7 +10,8 @@ Route::get('dashboard', App\Livewire\Home::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::get('/', App\Livewire\Home::class)
-    ->middleware(['auth', 'verified']);
+Route::get('/', function () {
+    return redirect()->route('dashboard');
+});
 
 require __DIR__ . '/auth.php';
