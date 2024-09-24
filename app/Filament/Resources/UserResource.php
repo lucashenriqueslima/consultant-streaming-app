@@ -56,10 +56,8 @@ class UserResource extends Resource
                 TextColumn::make('last_access_log.last')
                     ->label('Último acesso')
                     ->getStateUsing(function ($record) {
-                        return optional($record->accessLogs->first())->created_at ?? '2024-01-01 00:00:00';
+                        return optional($record->accessLogs->last())->created_at ?? '2024-01-01 00:00:00';
                     })
-                    ->searchable()
-                    ->sortable()
                     ->since(),
 
             ])
