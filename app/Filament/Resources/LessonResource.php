@@ -35,7 +35,6 @@ class LessonResource extends Resource
                 Forms\Components\FileUpload::make('video')
                     ->directory('uploads')
                     ->visibility('public')
-                    ->acceptedFileTypes(['video/*'])
                     ->required(),
                 Forms\Components\FileUpload::make('image')
                     ->label('Imagem')
