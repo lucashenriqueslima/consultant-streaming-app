@@ -45,7 +45,6 @@ class CourseResource extends Resource
                         Forms\Components\FileUpload::make('video')
                             ->directory('uploads')
                             ->visibility('public')
-                            ->acceptedFileTypes(['video/*'])
                             ->previewable(false)
                             ->columnSpan(1)
                             ->required(),
