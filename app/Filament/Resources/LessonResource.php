@@ -33,7 +33,6 @@ class LessonResource extends Resource
                     ->columnSpanFull()
                     ->required()
                     ->maxLength(255),
-                ChunkedFileUpload::make('video'),
                 Forms\Components\FileUpload::make('image')
                     ->label('Imagem')
                     ->directory('uploads')
@@ -46,6 +45,11 @@ class LessonResource extends Resource
                         '1:1',
                     ])
                     ->required(),
+                Forms\Components\TextInput::make('video')
+                    ->label('ID do vídeo')
+                    ->required()
+                    ->maxLength(255)
+                    ->columnSpanFull(),
             ]);
     }
 

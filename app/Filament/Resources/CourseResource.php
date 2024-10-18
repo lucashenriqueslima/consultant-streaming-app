@@ -42,12 +42,11 @@ class CourseResource extends Resource
                             ->maxLength(255)
                             ->live(onBlur: true)
                             ->columnSpanFull(),
-                        Forms\Components\FileUpload::make('video')
-                            ->directory('uploads')
-                            ->visibility('public')
-                            ->previewable(false)
-                            ->columnSpan(1)
-                            ->required(),
+                        Forms\Components\TextInput::make('video')
+                            ->label('ID do vídeo')
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpanFull(),
                         Forms\Components\FileUpload::make('image')
                             ->label('Imagem')
                             ->directory('uploads')
