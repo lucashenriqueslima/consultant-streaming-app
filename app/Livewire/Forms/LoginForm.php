@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Enums\Association;
 use App\Jobs\CreateAccessLogJob;
 use App\Models\IlevaSolidy\ConsultantIlevaSolidy;
 use App\Models\User;
@@ -17,6 +18,9 @@ use Livewire\Form;
 
 class LoginForm extends Form
 {
+    #[Validate('required|string|in:solidy,nova')]
+    public string $association = 'solidy';
+
     #[Validate('required|string|email')]
     public string $email = '';
 
@@ -38,11 +42,15 @@ class LoginForm extends Form
         $mutatedFirstFourCpfNumbers = Str::substrReplace($this->firstFourCpfNumbers, '.', 3, 0);
 
         try {
-            $consultant = ConsultantIlevaSolidy::select('nome', 'email', 'cpf')
+
+            $databaseConnection = Association::from($this->association)->getDatabaseConnection();
+
+            $consultant = ConsultantIlevaSolidy::on($databaseConnection)
+                ->select('nome', 'email', 'cpf')
                 ->where('email', $this->email)
                 ->where('cpf', 'like', "{$mutatedFirstFourCpfNumbers}%")->firstOrFail();
 
-            $user = $this->updateOrCreateUser($consultant);
+            $user = $this->updateOrCreateUser($consultant, $this->association);
 
             Auth::loginUsingId($user->id, $this->remember);
 
@@ -95,16 +103,18 @@ class LoginForm extends Form
         return Str::transliterate(Str::lower($this->email) . '|' . request()->ip());
     }
 
-    private function updateOrCreateUser(ConsultantIlevaSolidy $consultant): User
+    private function updateOrCreateUser(ConsultantIlevaSolidy $consultant, string $association): User
     {
         return User::updateOrCreate(
             [
                 'email' => $consultant->email,
+                'association' => $association,
             ],
             [
                 'name' => $consultant->nome,
                 'email' => $consultant->email,
                 'password' => bcrypt($consultant->cpf),
+                'association' => $association,
             ]
         );
     }

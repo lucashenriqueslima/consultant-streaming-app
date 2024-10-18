@@ -4,14 +4,18 @@ use App\Livewire\Forms\LoginForm;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
+use App\Enums\Association;
 
 new #[Layout('layouts.guest')] class extends Component
 {
     public LoginForm $form;
+    public array $associations;
 
-    /**
-     * Handle an incoming authentication request.
-     */
+    public function mount(): void
+    {
+        $this->associations = Association::getSelectOptions();
+    }
+
     public function login(): void
     {
         $this->validate();
@@ -29,8 +33,20 @@ new #[Layout('layouts.guest')] class extends Component
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <form wire:submit="login">
-        <!-- Email Address -->
         <div>
+            <x-input-label for="association" value="Associação" />
+            <x-select-input
+                wire:model="form.association"
+                id="association"
+                name="association"
+                :options="$associations"
+                selected="{{ $form->association }}"
+                required
+            />
+            <x-input-error :messages="$errors->get('form.association')" class="mt-2" />
+        </div>
+        <!-- Email Address -->
+        <div class="mt-4">
             <x-input-label for="email" :value="__('Email')" />
             <x-text-input wire:model="form.email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus autocomplete="username" />
             <x-input-error :messages="$errors->get('form.email')" class="mt-2" />

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LessonController;
 use App\Models\AccessLog;
 use App\Models\User;
 use App\Models\UserProgress;
@@ -17,3 +18,6 @@ Route::get('/user-progress', function (Request $request) {
 Route::get('/access-logs', function (Request $request) {
     return AccessLog::all();
 });
+
+Route::post('/upload', [LessonController::class, 'upload']);
+Route::delete('/revert', [LessonController::class, 'revert']);

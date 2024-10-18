@@ -12,6 +12,8 @@
         <title>{{ $title ?? 'Home | Universidade Solidy' }}</title>
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <script src="https://www.youtube.com/iframe_api"></script>
     </head>
     <body class="font-sans antialiased">
         {{ $slot }}

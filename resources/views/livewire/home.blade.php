@@ -24,8 +24,7 @@
                         <div
                             x-data="videoComponent"
                             class="relative w-64 h-86 max-w-xs overflow-hidden rounded-lg cursor-pointer bg-white"
-                            data-video-mp4="{{ $this->getStorageUrl($lesson->video) }}"
-                            data-video-webm="{{ $this->getStorageUrl($lesson->video) }}"
+                            data-ytb-video-id="{{ $lesson->video }}"
                             data-lesson-id="{{ $lesson->id }}"
                             @click.prevent="setVideoSources($event)"
                         >
@@ -45,8 +44,11 @@
         @endforeach
         <div x-data x-show="$store.videoLightBox.isOpen" id="lightbox" class="lightbox" wire:ignore>
             <div class="lightbox-content" wire:ignore>
-                <span x-data="videoCloseBtn" @click.prevent="closeVideo($event)" class="absolute text-white top-2.5 right-5 cursor-pointer text-2xl z-10">&times;</span>
-            </div>
+                <span x-data="videoCloseBtn" @click.prevent="closeVideo($event)" class="absolute text-white top-2 right-28 cursor-pointer text-5xl z-10">&times;</span>
+                <div class="absolute text-white top-0 right-5 cursor-pointer text-4xl z-5 px-10 py-10"></div>
+                <div class="absolute text-white top-0 left-2.5 cursor-pointer text-4xl z-5 px-32 py-10"></div>
+                <div class="absolute text-white bottom-0 right-10 cursor-pointer text-4xl z-5 px-10 py-5"></div>
+            </divc>
         </div>
     </div>
             <style>
@@ -68,9 +70,21 @@
                 height: 100%;
                 background-color: #000000e5;
             }
+
             </style>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+
+document.addEventListener('livewire:init', () => {
+    // window.addEventListener("contextmenu", e => e.preventDefault());
+});
+
+
+</script>
 @script
 <script>
+
+
 
         Alpine.store('videoLightBox', {
             isOpen: false,
@@ -80,49 +94,81 @@
         });
 
         Alpine.data('videoComponent', () => ({
-            videoMp4: '',
-            videoPlayer: document.createElement('video'),
-            listenerVideoPlayer: function() {
-                this.videoPlayer.addEventListener('timeupdate', () => {
-                    if (this.videoPlayer.currentTime >= this.videoPlayer.duration - 10) {
-                        $wire.dispatch('lessonCompleted', {
-                            lessonId: lessonId
-                        });
+            ytbIframe: document.createElement('iframe'),
+            listenerYtbIframe: function() {
+
+                if(player) {
+                    player.destroy();
+                }
+
+                var player;
+                var videoDuration = 0;
+                var watched90Percent = false;
+
+
+                player = new YT.Player('player', {
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange
                     }
                 });
+
+
+                // Função chamada quando o player está pronto
+                function onPlayerReady(event) {
+                    videoDuration = player.getDuration(); // Obtém a duração total do vídeo
+                    player.playVideo(); // Inicia o vídeo
+                }
+
+                // Função para controlar mudanças no estado do player
+                function onPlayerStateChange(event) {
+                    console.log(event)
+                    if (event.data == YT.PlayerState.PLAYING) {
+
+                        // Iniciar monitoramento do progresso do vídeo a cada 1 segundo
+                        var interval = setInterval(function() {
+                            var currentTime = player.getCurrentTime(); // Tempo atual do vídeo
+                            if (currentTime / videoDuration >= 0.90 && !watched90Percent) {
+                                watched90Percent = true;
+                                $wire.dispatch('lessonCompleted', {
+                                    lessonId: lessonId
+                                });
+                            }
+
+                            // Parar o intervalo se o vídeo terminar ou o usuário fechar o vídeo
+                            if (player.getPlayerState() != YT.PlayerState.PLAYING) {
+                                clearInterval(interval);
+                            }
+                        }, 1000);
+                    }
+                }
             },
 
             setVideoSources(event) {
 
+                let ytbVideoId = event.currentTarget.getAttribute('data-ytb-video-id');
 
-                //remove last event listener from video player
-                if (this.videoPlayer) {
-                    this.videoPlayer.removeEventListener('timeupdate', this.listenerVideoPlayer);
-                }
+                console.log(`https://www.youtube-nocookie.com/embed/${ytbVideoId}?showinfo=0&rel=0&enablejsapi=1`)
 
-                this.videoMp4 = event.currentTarget.getAttribute('data-video-mp4');
+                this.ytbIframe.id = 'player';
+                this.ytbIframe.src = `https://www.youtube-nocookie.com/embed/${ytbVideoId}?showinfo=0&rel=0&enablejsapi=1`;
+                this.ytbIframe.frameBorder = '0';
+                this.ytbIframe.start = '1'
+                this.ytbIframe.allowFullscreen = false;
+                this.ytbIframe.allow = 'autoplay';
 
-                this.videoPlayer.setAttribute('controls', 'true');
-                this.videoPlayer.setAttribute('autoplay', 'true');
-
-                this.videoPlayer.style.height = '100vh';
-                this.videoPlayer.style.width = '100vw';
+                this.ytbIframe.style.height = '100vh';
+                this.ytbIframe.style.width = '100vw';
 
                 const lightbox = document.getElementById('lightbox');
 
-                lightbox.querySelector('.lightbox-content').appendChild(this.videoPlayer);
-
-                const sourceMp4 = document.createElement('source');
-                sourceMp4.setAttribute('src', this.videoMp4);
-                sourceMp4.setAttribute('type', 'video/mp4');
-
-                this.videoPlayer.appendChild(sourceMp4);
+                lightbox.querySelector('.lightbox-content').appendChild(this.ytbIframe);
 
                 $store.videoLightBox.toggle();
 
                 lessonId = event.currentTarget.getAttribute('data-lesson-id');
 
-                this.listenerVideoPlayer();
+                this.listenerYtbIframe();
 
                 $nextTick(() => {
                     $wire.dispatch('lessonStarted', {
@@ -135,10 +181,8 @@
 
         Alpine.data('videoCloseBtn', () => ({
             closeVideo(event) {
-                let videoPlayer = document.querySelector('video')
+                let videoPlayer = document.querySelector('iframe')
 
-                videoPlayer.pause();
-                videoPlayer.parentNode.removeChild(videoPlayer);
                 videoPlayer.remove();
 
                 $store.videoLightBox.toggle();

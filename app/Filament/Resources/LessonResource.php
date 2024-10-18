@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\LessonResource\Pages;
 use App\Filament\Resources\LessonResource\RelationManagers;
+use App\Forms\Components\ChunkedFileUpload;
 use App\Models\Lesson;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -32,10 +33,7 @@ class LessonResource extends Resource
                     ->columnSpanFull()
                     ->required()
                     ->maxLength(255),
-                Forms\Components\FileUpload::make('video')
-                    ->directory('uploads')
-                    ->visibility('public')
-                    ->required(),
+                ChunkedFileUpload::make('video'),
                 Forms\Components\FileUpload::make('image')
                     ->label('Imagem')
                     ->directory('uploads')
