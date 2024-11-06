@@ -108,7 +108,6 @@ class LoginForm extends Form
         return User::updateOrCreate(
             [
                 'email' => $consultant->email,
-                'association' => $association,
             ],
             [
                 'name' => $consultant->nome,
