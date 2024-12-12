@@ -7,17 +7,8 @@ use App\Models\UserProgress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return User::all();
+Route::get('/', function (Request $request) {
+    return [
+        'status' => 'ok'
+    ];
 });
-
-Route::get('/user-progress', function (Request $request) {
-    return UserProgress::all();
-});
-
-Route::get('/access-logs', function (Request $request) {
-    return AccessLog::all();
-});
-
-Route::post('/upload', [LessonController::class, 'upload']);
-Route::delete('/revert', [LessonController::class, 'revert']);
