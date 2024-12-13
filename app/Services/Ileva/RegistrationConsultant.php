@@ -5,18 +5,20 @@ use App\Services\Ileva\Ileva;
 
 class RegistrationConsultant extends Ileva
 {
-    private const ENDPOINT_CONSULTANT_REGISTRATION = '/...';
+    private const ENDPOINT_CONSULTANT_REGISTRATION = '/consultor';
 
-    public function registerConsultant($dadosCadastro) {
-        $corpoRequisicao = $this->dataRequestRegistrationConsultant($dadosCadastro);
-        $tokenByAssociation = $this->tokenByNameMembership($dadosCadastro['nome_associacao']);
+    public function registerConsultant($dataRegistration) {
+        $this->validateArgumentsRegistrationConsultant($dataRegistration);
+
+        $bodyRequest = $this->dataRequestRegistrationConsultant($dataRegistration);
+        $tokenByAssociation = $this->tokenByNameMembership($dataRegistration['name_association']);
         $headers = [
             'Content-Type' => 'application/json',
-            'Authorization' => 'Bearer ' . $tokenByAssociation
+            'access_token' => $tokenByAssociation
         ];
 
         $response = Ileva::withHeaders($headers)
-            ->post(self::buildUrl(self::ENDPOINT_CONSULTANT_REGISTRATION), $corpoRequisicao);
+            ->post(self::buildUrl(self::ENDPOINT_CONSULTANT_REGISTRATION), $bodyRequest);
 
         if ($response->failed()) {
             return [

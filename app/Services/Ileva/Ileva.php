@@ -2,18 +2,50 @@
 namespace App\Services\Ileva;
 
 use Illuminate\Support\Facades\Http;
+use InvalidArgumentException;
 
 class Ileva extends Http
 {
-    protected const BASE_URL = '...';
-    protected const ASSOCIATION_SOLIDY = 'solidy';
-    protected const ASSOCIATION_NOVA = 'nova';
+    protected const BASE_URL = 'https://api-integracao.ileva.com.br';
 
-    public function dataRequestRegistrationConsultant($dadosCadastro) {
-        return [
-            'email' => $dadosCadastro['email']
-            // ...
-        ];
+    public const ASSOCIATION_SOLIDY = 'solidy';
+    public const ASSOCIATION_NOVA = 'nova';
+    public const ASSOCIATION_MOTOCLUB = 'motoclube';
+
+    public const ASSOCIATE_ACTIVE = 1;
+    public const ASSOCIATE_INACTIVE = 0;
+    public const ASSOCIATE_COMMISSIONED = true;
+    public const ASSOCIATE_NOT_COMMISSIONED = false;
+
+    public function dataRequestRegistrationConsultant($dataRegistration) {
+        try {
+            return [
+                "status" => $dataRegistration['status'],
+                "nome" => $dataRegistration['name'],
+                "email" => $dataRegistration['email'],
+                "telefone" => $dataRegistration['phone'],
+                "cpf" => $dataRegistration['cpf'],
+                "cod_equipe" => $dataRegistration['team_code'],
+                "cod_estado" => $dataRegistration['state_code'],
+                "cod_cidade" => $dataRegistration['city_code'],
+                "data_nascimento" => $dataRegistration['birth_date'],
+                "rua" => $dataRegistration['address'],
+                "numero" => $dataRegistration['number'],
+                "complemento" => $dataRegistration['complement'],
+                "bairro" => $dataRegistration['neighborhood'],
+                "cep" => $dataRegistration['zipcode'],
+                "banco" => $dataRegistration['bank'],
+                "agencia" => $dataRegistration['agency'],
+                "operacao" => $dataRegistration['operation'],
+                "conta" => $dataRegistration['account_number'],
+                "recebe_comissao" => $dataRegistration['commission'],
+                "tipo_pessoa" => $dataRegistration['person_type'],
+                "razao_social" => $dataRegistration['company_name'],
+                "representante" => $dataRegistration['representative']
+            ];
+        } catch (\Throwable $th) {
+            throw new InvalidArgumentException($th->getMessage());
+        }
     }
 
     protected static function buildUrl($endpoint) {
@@ -24,7 +56,20 @@ class Ileva extends Http
         return match ($nomeAssociacao) {
             self::ASSOCIATION_SOLIDY => env('ILEVA_SOLIDY_TOKEN_API'),
             self::ASSOCIATION_NOVA => env('ILEVA_NOVA_TOKEN_API'),
-            default => env('ILEVA_SOLIDY_TOKEN_API'),
+            self::ASSOCIATION_MOTOCLUB => env('ILEVA_MOTOCLUB_TOKEN_API'),
+            default => throw new InvalidArgumentException('Association not found')
         };
+    }
+
+    protected function validateArgumentsRegistrationConsultant($dataRegistration) {
+        $requiredFields = ['status', 'name', 'email', 'phone', 'cpf', 'team_code'];
+
+        foreach ($requiredFields as $field) {
+            if (!isset($dataRegistration[$field]) || empty($dataRegistration[$field])) {
+                throw new InvalidArgumentException(ucfirst($field) . ' is required in ' . __CLASS__);
+            }
+        }
+
+        return;
     }
 }
