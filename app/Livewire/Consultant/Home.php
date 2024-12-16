@@ -28,8 +28,6 @@ class Home extends Component
         ])
             ->where('panel', Panel::Consultant)
             ->get();
-
-        dd($this->courses);
     }
 
     #[On('lessonStarted')]
