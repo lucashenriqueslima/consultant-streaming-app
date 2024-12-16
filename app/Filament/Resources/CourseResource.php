@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Panel;
 use App\Filament\Resources\CourseResource\Pages;
 use App\Filament\Resources\CourseResource\RelationManagers;
 use App\Models\Course;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -29,8 +31,11 @@ class CourseResource extends Resource
                 TextInput::make('title')
                     ->label('Título do Curso')
                     ->required()
-                    ->maxLength(255)
-                    ->columnSpanFull(),
+                    ->maxLength(255),
+                Select::make('panel')
+                    ->label('Painel')
+                    ->options(Panel::class)
+                    ->required(),
                 Repeater::make('lessons')
                     ->label('Aulas')
                     ->addActionLabel('Adicionar aula')

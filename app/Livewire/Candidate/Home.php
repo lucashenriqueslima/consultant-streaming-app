@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Candidate;
 
+use App\Enums\Panel;
 use App\Models\Course;
 use App\Models\UserProgress;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -11,6 +13,22 @@ use Livewire\Attributes\On;
 
 class Home extends Component
 {
+    public Collection $courses;
+
+    //mount
+    public function mount()
+    {
+        $this->courses = Course::with([
+            'lessons' => function ($query) {
+                $query->orderBy('order')
+                    ->with(['userProgress' => function ($query) {
+                        $query->where('user_id', Auth::id());
+                    }]);
+            }
+        ])
+            ->where('panel', Panel::Candidate)
+            ->get();
+    }
 
     #[On('lessonStarted')]
     public function createUserProgressIfDontExist(string $lessonId): void
@@ -64,16 +82,9 @@ class Home extends Component
     public function render()
     {
         return view(
-            'livewire.home',
+            'livewire.candidate.home',
             [
-                'courses' => Course::with([
-                    'lessons' => function ($query) {
-                        $query->orderBy('order')
-                            ->with(['userProgress' => function ($query) {
-                                $query->where('user_id', Auth::id());
-                            }]);
-                    }
-                ])->get()
+                'courses' => $this->courses,
             ]
         );
     }
