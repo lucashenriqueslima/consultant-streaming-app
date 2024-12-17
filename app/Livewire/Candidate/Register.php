@@ -3,8 +3,13 @@
 namespace App\Livewire\Candidate;
 
 use App\Enums\Association;
+use App\Models\Candidate;
+use App\Models\Ileva\ConsultantIleva;
 use App\Models\Ileva\ConsultantTeamIleva;
+use App\Models\User;
 use App\Services\CandidateService;
+use App\Services\PuxaCapivara\ConsultSheet;
+use App\Enums\CandidateStatus;
 use Livewire\Component;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Actions\Contracts\HasActions;
@@ -20,6 +25,7 @@ use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Laravel\Octane\Facades\Octane;
 use Livewire\Attributes\On;
 
 
@@ -31,10 +37,15 @@ class Register extends Component implements HasForms, HasActions
 
     public ?array $data = [];
 
+    //mount
+    public function mount(): void
+    {
+        $this->form->fill();
+    }
+
     public function getAssociationFields(): Fieldset
     {
-        return
-            Fieldset::make('Informações da Associação')
+        return Fieldset::make('Informações da Associação')
             ->schema([
                 Select::make('association')
                     ->label('Associação')
@@ -42,9 +53,9 @@ class Register extends Component implements HasForms, HasActions
                     ->live()
                     ->required(),
                 Select::make('ileva_team_id')
-                    ->label('Time')
-                    ->searchable()
+                    ->label('Equipe')
                     ->disabled(fn(Get $get) => empty($get('association')))
+                    ->searchable()
                     ->getSearchResultsUsing(
                         function (string $search, Get $get): array {
                             $databaseConnection = Association::from($get('association'))->getDatabaseConnection();
@@ -58,12 +69,12 @@ class Register extends Component implements HasForms, HasActions
                         }
                     )
                     ->getOptionLabelUsing(
-                        function (int|string|null $teamId, Get $get): ?string {
+                        function ($value, Get $get): ?string {
 
                             $databaseConnection = Association::from($get('association'))->getDatabaseConnection();
 
                             return ConsultantTeamIleva::on($databaseConnection)
-                                ->find($teamId)
+                                ->find($value)
                                 ->equipe;
                         }
                     )
@@ -175,32 +186,75 @@ class Register extends Component implements HasForms, HasActions
             ->statePath('data');
     }
 
-    public function submit(CandidateService $candidateService)
+    public function showCpfAlreadyRegisteredNotification(): void
     {
-        $this->data = $this->form->getState();
-
-        $candiate = $candidateService->create($this->data);
-
         Notification::make()
-            ->title('Candidato Cadastrado')
-            ->success()
+            ->title('CPF ou E-mail ja cadastrado')
+            ->danger()
             ->persistent()
-            ->body('Clique aqui para acessar sua plataforma.')
-            ->actions([
-                Action::make('redirect-to-dashboard')
-                    ->label('Acessar Plataforma')
-                    ->button()
-                    ->color('success')
-                    ->dispatch('redirect-to-dashboard', [$candiate->id])
-
-            ])
             ->send();
+    }
+
+    public function submit(CandidateService $candidateService, ConsultSheet $consultSheet): void
+    {
+        try {
+
+            $this->data = $this->form->getState();
+
+            $databaseConnection = Association::from($this->data['association'])->getDatabaseConnection();
+
+            if (Candidate::where('cpf', $this->data['cpf'])->exists()) {
+                $this->showCpfAlreadyRegisteredNotification();
+                return;
+            };
+
+            if (ConsultantIleva::on($databaseConnection)->where('cpf', $this->data['cpf'])->exists()) {
+                $this->showCpfAlreadyRegisteredNotification();
+                return;
+            }
+
+            $candidateCriminalHistory = $consultSheet->searchDataByDocument($this->data['cpf']);
+
+            dd($candidateCriminalHistory);
+
+            $this->data['status'] = $candidateCriminalHistory['data']['status'] ? CandidateStatus::ACTIVE : CandidateStatus::REFUSED_BY_CRIMINAL_HISTORY;
+
+            dd($this->data);
+
+            $candiate = $candidateService->create($this->data);
+
+            if ($this->data['status'] === CandidateStatus::REFUSED_BY_CRIMINAL_HISTORY) {
+                throw new \Exception('Não foi possivel cadastrar o candidato.');
+            }
+
+            Notification::make()
+                ->title('Candidato Cadastrado com sucesso!')
+                ->success()
+                ->persistent()
+                ->body('Clique aqui para acessar sua plataforma.')
+                ->actions([
+                    Action::make('redirect-to-dashboard')
+                        ->label('Acessar Plataforma')
+                        ->button()
+                        ->color('success')
+                        ->dispatch('redirect-to-dashboard', [$candiate->id])
+
+                ])
+                ->send();
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Erro ao cadastrar candidato!')
+                ->danger()
+                ->persistent()
+                ->body($e->getMessage())
+                ->send();
+        }
     }
 
     #[On('redirect-to-dashboard')]
     public function redirectToDashboard(int $candiateId): void
     {
-        Auth::guard('candidate')->loginUsingId($candiateId, true);
+        $authenctication = Auth::guard('candidate')->loginUsingId($candiateId, true);
 
         Session::regenerate();
 

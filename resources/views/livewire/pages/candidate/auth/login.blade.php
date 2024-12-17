@@ -18,13 +18,13 @@ new #[Layout('layouts.guest')] class extends Component
 
     public function login(): void
     {
-        $this->validate();
+        // $this->validate();
 
         $this->form->authenticate();
 
         Session::regenerate();
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $this->redirectIntended(default: route('candidate.dashboard', absolute: false), navigate: true);
     }
 }; ?>
 
@@ -72,9 +72,9 @@ new #[Layout('layouts.guest')] class extends Component
         </div>
     </form>
 </div>
-<script src="https://unpkg.com/imask"></script>
+@script
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
+
         const cpfInput = document.getElementById('cpf');
 
         // Configuração da máscara para CPF
@@ -84,5 +84,6 @@ new #[Layout('layouts.guest')] class extends Component
         };
 
         IMask(cpfInput, maskOptions);
-    });
+
 </script>
+@endscript

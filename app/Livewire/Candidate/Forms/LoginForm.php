@@ -3,11 +3,11 @@
 namespace App\Livewire\Candidate\Forms;
 
 use App\Enums\Association;
+use App\Enums\CandidateStatus;
 use App\Jobs\CreateAccessLogJob;
 use App\Jobs\SendAuthenticationTokenToCandidateJob;
 use App\Models\Candidate;
 use App\Models\Ileva\ConsultantIleva;
-use App\Models\User;
 use App\Services\CandidateService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
@@ -48,7 +48,7 @@ class LoginForm extends Form
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'form.email' => trans('auth.throttle', [
+            'form.cpf' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -61,21 +61,6 @@ class LoginForm extends Form
     protected function throttleKey(): string
     {
         return Str::transliterate(Str::lower($this->cpf) . '|' . request()->ip());
-    }
-
-    private function updateOrCreateUser(ConsultantIleva $consultant, string $association): User
-    {
-        return User::updateOrCreate(
-            [
-                'email' => $consultant->email,
-            ],
-            [
-                'name' => $consultant->nome,
-                'email' => $consultant->email,
-                'password' => bcrypt($consultant->cpf),
-                'association' => $association,
-            ]
-        );
     }
 
     private function generateAuthenticationToken(): string
@@ -91,6 +76,8 @@ class LoginForm extends Form
 
         try {
             $candidate = Candidate::where('cpf', $this->cpf)
+                ->where('association', $this->association)
+                // ->whereNotIn('status', [CandidateStatus::REFUSED_BY_CRIMINAL_HISTORY->value, CandidateStatus::REFUSED_ON_TEST->value])
                 ->firstOrFail();
 
             $generatedAuthenticationToken = $this->generateAuthenticationToken();
@@ -129,27 +116,21 @@ class LoginForm extends Form
 
         try {
 
-            $candidate = Candidate::where('cpf', $this->cpf)->firstOrFail();
-
-            $user = $this->updateOrCreateUser($candidate, $this->association);
-
-            Auth::guard('candidate')->loginUsingId($user->id, true);
-
-            dispatch(
-                new CreateAccessLogJob(
-                    $user,
-                    request()->ip()
-                )
-            );
 
 
+            $candidate = Candidate::where('cpf', $this->cpf)
+                ->where('association', $this->association)
+                ->firstOrFail();
+
+
+            Auth::guard('candidate')->loginUsingId($candidate->id, true);
 
             RateLimiter::clear($this->throttleKey());
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'form.email' => trans('auth.failed'),
+                'form.cpf' => trans('auth.failed'),
             ]);
         }
     }

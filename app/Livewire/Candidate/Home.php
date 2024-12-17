@@ -2,18 +2,26 @@
 
 namespace App\Livewire\Candidate;
 
+use App\Enums\CandidateStatus;
 use App\Enums\Panel;
+use App\Models\Candidate;
 use App\Models\Course;
-use App\Models\UserProgress;
+use App\Models\CandidateProgress;
+use App\Services\CandidateService;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Layout;
+
 
 class Home extends Component
 {
     public Collection $courses;
+    public ?int $lessonsCount;
+    public bool $hasCompletedAllLessons = false;
 
     //mount
     public function mount()
@@ -21,21 +29,32 @@ class Home extends Component
         $this->courses = Course::with([
             'lessons' => function ($query) {
                 $query->orderBy('order')
-                    ->with(['userProgress' => function ($query) {
-                        $query->where('user_id', Auth::id());
+                    ->with(['candidateProgress' => function ($query) {
+                        $query->where('candidate_id', Auth::guard('candidate')->id());
                     }]);
             }
         ])
             ->where('panel', Panel::Candidate)
             ->get();
+
+        $this->lessonsCount =
+            Course::where('panel', Panel::Candidate)
+            ->withCount('lessons')
+            ->first()
+            ?->lessons_count;
+
+        $this->hasCompletedAllLessons = $this->hasCompletedAllLessons();
     }
 
+
+
+
     #[On('lessonStarted')]
-    public function createUserProgressIfDontExist(string $lessonId): void
+    public function createCandidateProgressIfDontExist(string $lessonId): void
     {
-        UserProgress::firstOrCreate(
+        CandidateProgress::firstOrCreate(
             [
-                'user_id' => Auth::id(),
+                'candidate_id' => Auth::guard('candidate')->id(),
                 'lesson_id' => $lessonId,
             ],
             [
@@ -46,14 +65,58 @@ class Home extends Component
     }
 
     #[On('lessonCompleted')]
-    public function updateUserProgress(string $lessonId): void
+    public function updateCandidateProgress(string $lessonId): void
     {
-        UserProgress::where('user_id', Auth::id())
+        CandidateProgress::where('candidate_id', Auth::guard('candidate')->id())
             ->where('lesson_id', $lessonId)
             ->update([
                 'completed_at' => now(),
                 'is_completed' => true,
             ]);
+
+        if ($this->hasCompletedAllLessons()) {
+            $this->showAllLessonsCompletedNotification();
+        }
+    }
+
+    public function hasCompletedAllLessons(): bool
+    {
+        if (!$this->lessonsCount) {
+            return true;
+        }
+
+        if (
+            !$this->hasCompletedAllLessons || CandidateProgress::where('candidate_id', Auth::guard('candidate')->id())
+            ->where('is_completed', operator: true)
+            ->count() != $this->lessonsCount
+        ) {
+            return false;
+        }
+
+        if (!$this->hasCompletedAllLessons) {
+            $candidateService = new CandidateService();
+
+            $candidateService->update(
+                Candidate::find(Auth::guard('candidate')->id()),
+                ['status' => CandidateStatus::COMPLETED_LESSONS]
+            );
+        }
+
+        $this->hasCompletedAllLessons = true;
+
+        return true;
+    }
+
+    public function showAllLessonsCompletedNotification(): void
+    {
+
+
+        Notification::make()
+            ->title('Parabéns, todas as aulas foram concluidas!')
+            ->success()
+            ->persistent()
+            ->body('Entraremos em contato em breve, para realização de uma avaliação de desempenho.')
+            ->send();
     }
 
     public function getStorageUrl(string $path): string
@@ -61,7 +124,7 @@ class Home extends Component
         return Storage::url($path);
     }
 
-    public function getUserProgressStatusLabel(?bool $isCompleted): string
+    public function getCandidateProgressStatusLabel(?bool $isCompleted): string
     {
         return match ($isCompleted) {
             true => 'Completo',
@@ -70,7 +133,7 @@ class Home extends Component
         };
     }
 
-    public function getUserProgressStatusIcon(?bool $isCompleted): string
+    public function getCandidateProgressStatusIcon(?bool $isCompleted): string
     {
         return match ($isCompleted) {
             true => 'heroicon-o-check',
@@ -81,6 +144,10 @@ class Home extends Component
 
     public function render()
     {
+        if ($this->hasCompletedAllLessons()) {
+            $this->showAllLessonsCompletedNotification();
+        }
+
         return view(
             'livewire.candidate.home',
             [

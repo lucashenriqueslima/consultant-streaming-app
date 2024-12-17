@@ -8,11 +8,11 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/', [HomeController::class, 'index']);
 
 Route::get('dashboard', App\Livewire\Consultant\Home::class)
-    ->middleware(['auth', 'verified'])
+    // ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
 Route::get('candidate/dashboard', App\Livewire\Candidate\Home::class)
-    ->middleware(['auth', 'verified'])
+    // ->middleware(['auth:candidate', 'verified'])
     ->name('candidate.dashboard');
 
 Route::get('/', function () {
