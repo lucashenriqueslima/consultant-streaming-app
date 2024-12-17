@@ -19,7 +19,7 @@ class RegisterConsultant extends Ileva
 
         try {
             $response = Ileva::withHeaders($this->getDefaultHeaders([
-                'access_token' => Association::from($ilevaConsultantDTO->association->value)->getApiToken(),
+                'access_token' => Association::from($ilevaConsultantDTO->association)->getApiToken(),
             ]))
                 ->post(self::buildUrl(self::ENDPOINT_CONSULTANT_REGISTRATION), $ilevaConsultantDTO->toArray());
 

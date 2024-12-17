@@ -34,8 +34,6 @@ class ConsultSheet extends PuxaCapivara
                 throw new \Exception($response->json()['message']);
             }
 
-            dd($response->json());
-
             return $response->json();
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
