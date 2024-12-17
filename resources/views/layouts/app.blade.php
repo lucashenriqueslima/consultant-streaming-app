@@ -1,5 +1,9 @@
 <div class="min-h-screen bg-gray-900">
-    <livewire:layout.navigation />
+    @if (auth('web')->check())
+        <livewire:layout.consultant.navigation />
+    @elseif (auth('candidate')->check())
+        <livewire:layout.candidate.navigation />
+    @endif
 
     <!-- Page Heading -->
     @if (isset($header))

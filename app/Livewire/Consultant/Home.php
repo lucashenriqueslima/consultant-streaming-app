@@ -1,16 +1,35 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Consultant;
 
+use App\Enums\Panel;
 use App\Models\Course;
 use App\Models\UserProgress;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Layout;
 
 class Home extends Component
 {
+    public Collection $courses;
+
+    //mount
+    public function mount()
+    {
+        $this->courses = Course::with([
+            'lessons' => function ($query) {
+                $query->orderBy('order')
+                    ->with(['userProgress' => function ($query) {
+                        $query->where('user_id', Auth::id());
+                    }]);
+            }
+        ])
+            ->where('panel', Panel::Consultant)
+            ->get();
+    }
 
     #[On('lessonStarted')]
     public function createUserProgressIfDontExist(string $lessonId): void
@@ -64,16 +83,9 @@ class Home extends Component
     public function render()
     {
         return view(
-            'livewire.home',
+            'livewire.consultant.home',
             [
-                'courses' => Course::with([
-                    'lessons' => function ($query) {
-                        $query->orderBy('order')
-                            ->with(['userProgress' => function ($query) {
-                                $query->where('user_id', Auth::id());
-                            }]);
-                    }
-                ])->get()
+                'courses' => $this->courses,
             ]
         );
     }

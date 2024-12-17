@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Livewire\Forms;
+namespace App\Livewire\Consultant\Forms;
 
 use App\Enums\Association;
 use App\Jobs\CreateAccessLogJob;
-use App\Models\IlevaSolidy\ConsultantIlevaSolidy;
+use App\Models\Ileva\ConsultantIleva;
 use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
@@ -45,7 +45,7 @@ class LoginForm extends Form
 
             $databaseConnection = Association::from($this->association)->getDatabaseConnection();
 
-            $consultant = ConsultantIlevaSolidy::on($databaseConnection)
+            $consultant = ConsultantIleva::on($databaseConnection)
                 ->select('nome', 'email', 'cpf')
                 ->where('email', $this->email)
                 ->where('cpf', 'like', "{$mutatedFirstFourCpfNumbers}%")->firstOrFail();
@@ -103,7 +103,7 @@ class LoginForm extends Form
         return Str::transliterate(Str::lower($this->email) . '|' . request()->ip());
     }
 
-    private function updateOrCreateUser(ConsultantIlevaSolidy $consultant, string $association): User
+    private function updateOrCreateUser(ConsultantIleva $consultant, string $association): User
     {
         return User::updateOrCreate(
             [

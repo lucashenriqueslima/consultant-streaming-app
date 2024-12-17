@@ -33,6 +33,8 @@ return [
     ],
     'boolean'              => 'O campo :attribute deve ser verdadeiro ou falso.',
     'can'                  => 'O campo :attribute contém valores não autorizado.',
+    'cpf' => 'O campo CPF não é um CPF válido.',
+    'cnpj' => 'O campo CNPJ não é um CNPJ válido.',
     'confirmed'            => 'O campo :attribute de confirmação não confere.',
     'contains'             => 'O campo :attribute está faltando um valor obrigatório.',
     'current_password'     => 'A senha está incorreta.',

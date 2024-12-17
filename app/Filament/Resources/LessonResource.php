@@ -64,7 +64,8 @@ class LessonResource extends Resource
                 Tables\Columns\TextColumn::make('title')
                     ->label('Título')
                     ->searchable(),
-                Tables\Columns\ImageColumn::make('image'),
+                Tables\Columns\ImageColumn::make('image')
+                    ->label('Imagem'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Data de criação')
                     ->dateTime()
