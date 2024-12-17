@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('email');
             $table->string('phone');
             $table->date('date_of_birth');
+            $table->timestamp('date_of_the_test')->nullable();
             $table->string('address');
             $table->string('number');
             $table->string('cep');
