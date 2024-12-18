@@ -13,6 +13,7 @@ enum CandidateStatus: string implements HasLabel, HasColor, HasIcon
     case ACCEPTED = 'accepted';
     case REFUSED_BY_CRIMINAL_HISTORY = 'refused-by-criminal-history';
     case REFUSED_ON_TEST = 'refused-on-test';
+    case PENDING_REGISTRATION = 'pending-registration';
 
     public function getLabel(): ?string
     {
@@ -22,6 +23,7 @@ enum CandidateStatus: string implements HasLabel, HasColor, HasIcon
             self::ACCEPTED => 'Aceito',
             self::REFUSED_BY_CRIMINAL_HISTORY => 'Recusado por Histórico Criminal',
             self::REFUSED_ON_TEST => 'Recusado no Teste',
+            self::PENDING_REGISTRATION => 'Cadastro Pendente',
         };
     }
 
@@ -33,6 +35,7 @@ enum CandidateStatus: string implements HasLabel, HasColor, HasIcon
             self::ACCEPTED => 'success',
             self::REFUSED_BY_CRIMINAL_HISTORY => 'danger',
             self::REFUSED_ON_TEST => 'danger',
+            self::PENDING_REGISTRATION => 'warning',
         };
     }
 
@@ -44,6 +47,7 @@ enum CandidateStatus: string implements HasLabel, HasColor, HasIcon
             self::ACCEPTED => 'heroicon-s-check-circle',
             self::REFUSED_BY_CRIMINAL_HISTORY => 'heroicon-s-x-circle',
             self::REFUSED_ON_TEST => 'heroicon-s-x-circle',
+            self::PENDING_REGISTRATION => 'heroicon-s-arrow-path',
         };
     }
 }

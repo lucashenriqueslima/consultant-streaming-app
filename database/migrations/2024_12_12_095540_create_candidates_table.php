@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('cpf')->unique();
-            $table->enum('association', ['solidy', 'nova'])->default('solidy');
-            $table->enum('status', ['active', 'accepted', 'completed-lessons', 'refused-by-criminal-history', 'refused-on-test'])->default('active');
+            $table->enum('association', ['solidy', 'nova', 'motoclub'])->default('solidy');
+            $table->enum('status', ['active', 'accepted', 'pending-registration', 'completed-lessons', 'refused-by-criminal-history', 'refused-on-test'])->default('active');
             $table->integer('ileva_team_id')->nullable();
             $table->string('email');
             $table->string('phone');

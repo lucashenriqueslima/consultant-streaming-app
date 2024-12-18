@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold ml-10 text-xl text-gray-100 leading-tight">
-            Home
+            Cursos
         </h2>
     </x-slot>
 

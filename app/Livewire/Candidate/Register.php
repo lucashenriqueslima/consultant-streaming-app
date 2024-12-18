@@ -6,7 +6,6 @@ use App\Enums\Association;
 use App\Models\Candidate;
 use App\Models\Ileva\ConsultantIleva;
 use App\Models\Ileva\ConsultantTeamIleva;
-use App\Models\User;
 use App\Services\CandidateService;
 use App\Services\PuxaCapivara\ConsultSheet;
 use App\Enums\CandidateStatus;
@@ -25,7 +24,6 @@ use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use Laravel\Octane\Facades\Octane;
 use Livewire\Attributes\On;
 
 
@@ -198,49 +196,53 @@ class Register extends Component implements HasForms, HasActions
     public function submit(CandidateService $candidateService, ConsultSheet $consultSheet): void
     {
         try {
-
             $this->data = $this->form->getState();
 
             $databaseConnection = Association::from($this->data['association'])->getDatabaseConnection();
 
-            if (Candidate::where('cpf', $this->data['cpf'])->exists()) {
-                $this->showCpfAlreadyRegisteredNotification();
-                return;
-            };
-
-            if (ConsultantIleva::on($databaseConnection)->where('cpf', $this->data['cpf'])->exists()) {
+            if (Candidate::where('cpf', $this->data['cpf'])->exists() ||
+                ConsultantIleva::on($databaseConnection)->where('cpf', $this->data['cpf'])->exists()) {
                 $this->showCpfAlreadyRegisteredNotification();
                 return;
             }
 
             $candidateCriminalHistory = $consultSheet->searchDataByDocument($this->data['cpf']);
+            $this->data['status'] = CandidateStatus::PENDING_REGISTRATION;
 
-            dd($candidateCriminalHistory);
-
-            $this->data['status'] = $candidateCriminalHistory['data']['status'] ? CandidateStatus::ACTIVE : CandidateStatus::REFUSED_BY_CRIMINAL_HISTORY;
-
-            dd($this->data);
-
-            $candiate = $candidateService->create($this->data);
-
-            if ($this->data['status'] === CandidateStatus::REFUSED_BY_CRIMINAL_HISTORY) {
-                throw new \Exception('Não foi possivel cadastrar o candidato.');
+            if ($candidateCriminalHistory['status'] !== 'timeout') {
+                $this->data['status'] = ($candidateCriminalHistory['data']['status'] ?? true)
+                    ? CandidateStatus::ACTIVE
+                    : CandidateStatus::REFUSED_BY_CRIMINAL_HISTORY;
             }
 
-            Notification::make()
-                ->title('Candidato Cadastrado com sucesso!')
-                ->success()
-                ->persistent()
-                ->body('Clique aqui para acessar sua plataforma.')
-                ->actions([
-                    Action::make('redirect-to-dashboard')
-                        ->label('Acessar Plataforma')
-                        ->button()
-                        ->color('success')
-                        ->dispatch('redirect-to-dashboard', [$candiate->id])
+            $candidate = $candidateService->create($this->data);
 
-                ])
-                ->send();
+            if ($this->data['status'] === CandidateStatus::REFUSED_BY_CRIMINAL_HISTORY) {
+                throw new \Exception('Cadastro não aprovado.');
+            }
+
+            if ($candidateCriminalHistory['status'] === 'timeout') {
+                Notification::make()
+                    ->title('Cadastro em análise!')
+                    ->warning()
+                    ->persistent()
+                    ->body('Seu cadastro foi realizado, mas estamos analisando algumas informações. Uma confirmação será enviada para o seu email. Por favor, aguarde.')
+                    ->send();
+            } else {
+                Notification::make()
+                    ->title('Candidato cadastrado com sucesso!')
+                    ->success()
+                    ->persistent()
+                    ->body('Clique aqui para acessar sua plataforma.')
+                    ->actions([
+                        Action::make('redirect-to-dashboard')
+                            ->label('Acessar Plataforma')
+                            ->button()
+                            ->color('success')
+                            ->dispatch('redirect-to-dashboard', [$candidate->id])
+                    ])
+                    ->send();
+            }
         } catch (\Exception $e) {
             Notification::make()
                 ->title('Erro ao cadastrar candidato!')

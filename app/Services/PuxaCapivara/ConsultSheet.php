@@ -2,6 +2,8 @@
 
 namespace App\Services\PuxaCapivara;
 
+use Illuminate\Support\Str;
+
 class ConsultSheet extends PuxaCapivara
 {
     public const ENDPOINT_CONSULT = '/analyze';
@@ -26,15 +28,21 @@ class ConsultSheet extends PuxaCapivara
 
         try {
             $response = PuxaCapivara::withHeaders($headers)
+                ->timeout(20)
                 ->post(self::buildUrl(self::ENDPOINT_CONSULT), [
-                    'cpf' => $cpf
+                    'cpf' => Str::replace(['.', '-', ' '], '', $cpf),
                 ]);
 
             if ($response->failed()) {
-                throw new \Exception($response->json()['message']);
+                throw new \Exception($response->json()['message'] ?? 'Erro desconhecido.');
             }
 
             return $response->json();
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            return [
+                'status' => 'timeout',
+                'message' => 'A conexão com o servidor falhou ou demorou muito para responder.',
+            ];
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

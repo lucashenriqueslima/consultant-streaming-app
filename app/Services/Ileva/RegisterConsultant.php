@@ -6,6 +6,7 @@ use App\DTOs\IlevaConsultantDTO;
 use App\Enums\Association;
 use App\Services\Ileva\Ileva;
 use App\Traits\HttpHelper;
+use Illuminate\Support\Facades\Log;
 
 class RegisterConsultant extends Ileva
 {
@@ -15,8 +16,6 @@ class RegisterConsultant extends Ileva
     //invoke
     public function execute(IlevaConsultantDTO $ilevaConsultantDTO): mixed
     {
-
-
         try {
             $response = Ileva::withHeaders($this->getDefaultHeaders([
                 'access_token' => Association::from($ilevaConsultantDTO->association)->getApiToken(),
@@ -24,10 +23,12 @@ class RegisterConsultant extends Ileva
                 ->post(self::buildUrl(self::ENDPOINT_CONSULTANT_REGISTRATION), $ilevaConsultantDTO->toArray());
 
             if ($response->failed()) {
+                Log::error('Falha ao criar consultor no iLeva.', $response->json());
                 throw new \Exception($response->json()['message']);
             }
 
-            return $response->json();
+            Log::info('Consultor criado com sucesso no iLeva.', $response->json());
+            return $response;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }

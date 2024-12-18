@@ -1,4 +1,4 @@
-<div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-green-900">
+<div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-blue-900">
     <div class="wrapper w-full md:max-w-5xl mx-auto py-10 px-4 my-5 bg-white rounded-md shadow-md ">
         <form wire:submit="submit">
             {{ $this->form }}

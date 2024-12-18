@@ -2,10 +2,9 @@
 
 namespace App\Observers;
 
-use App\DTOs\IlevaConsultantDTO;
 use App\Enums\CandidateStatus;
 use App\Models\Candidate;
-use App\Services\Ileva\RegisterConsultant;
+use App\Jobs\CreateConsultantIlevaJob;
 
 class CandidateObserver
 {
@@ -22,19 +21,8 @@ class CandidateObserver
      */
     public function updated(Candidate $candidate): void
     {
-        $registerConsultant = new RegisterConsultant();
-        if ($candidate->isDirty('status') && $candidate->status == CandidateStatus::ACCEPTED) {
-            $registerConsultant->execute(
-                new IlevaConsultantDTO(
-                    status: $candidate->status->value,
-                    name: $candidate->name,
-                    email: $candidate->email,
-                    phone: $candidate->phone,
-                    cpf: $candidate->cpf,
-                    team_code: $candidate->ileva_team_id,
-                    association: 'solidy',
-                )
-            );
+        if ($candidate->isDirty('status') && $candidate->status == CandidateStatus::COMPLETED_LESSONS) {
+            CreateConsultantIlevaJob::dispatch($candidate);
         }
     }
 
