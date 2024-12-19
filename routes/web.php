@@ -19,11 +19,6 @@ Route::get('candidate/certificates', App\Livewire\Candidate\Certificates::class)
     ->middleware(['auth:candidate', 'verified'])
     ->name('candidate.certificates');
 
-//candidate.certificates.download
-Route::get('candidate/certificates/download/{certificate}', [App\Livewire\Candidate\Certificates::class, 'download'])
-    ->middleware(['auth:candidate', 'verified'])
-    ->name('candidate.certificates.download');
-
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });

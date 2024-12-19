@@ -26,7 +26,7 @@
                                 </div>
                             </div>
                             <div class="mt-10 flex justify-end">
-                                <a href="{{ route('candidate.certificates.download', $certificate->id) }}" class="inline-block bg-blue-600 text-white text-lg py-2 px-6 rounded-md hover:bg-blue-500 transition">Baixar</a>
+                                <a href="#" class="inline-block bg-blue-600 text-white text-lg py-2 px-6 rounded-md hover:bg-blue-500 transition" wire:click="download({{ $certificate->id }})">Baixar</a>
                             </div>
                         </div>
                     </div>
