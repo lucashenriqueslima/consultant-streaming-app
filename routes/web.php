@@ -15,8 +15,21 @@ Route::get('candidate/dashboard', App\Livewire\Candidate\Home::class)
     ->middleware(['auth:candidate', 'verified'])
     ->name('candidate.dashboard');
 
+Route::get('candidate/certificates', App\Livewire\Candidate\Certificates::class)
+    ->middleware(['auth:candidate', 'verified'])
+    ->name('candidate.certificates');
+
+//candidate.certificates.download
+Route::get('candidate/certificates/download/{certificate}', [App\Livewire\Candidate\Certificates::class, 'download'])
+    ->middleware(['auth:candidate', 'verified'])
+    ->name('candidate.certificates.download');
+
 Route::get('/', function () {
     return redirect()->route('dashboard');
+});
+
+Route::get('/template-email', function () {
+    return view('mails.candidate_register_status', ['name' => 'John Doe']);
 });
 
 require __DIR__ . '/auth.php';

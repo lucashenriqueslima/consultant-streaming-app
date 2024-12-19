@@ -18,7 +18,7 @@ class ConsultSheet extends PuxaCapivara
      *      mensagem: mensagem de erro ou os dados da pessoa caso tenha sido encontrado.
      *      detalhes: detalhes da consulta. Caso tenha ocorrido um erro, este campo conter  o erro.
      */
-    public function searchDataByDocument(string $cpf): mixed
+    public function searchDataByDocument(string $cpf, int $timeout = 15): mixed
     {
         $headers = [
             'Content-Type' => 'application/json',
@@ -28,7 +28,7 @@ class ConsultSheet extends PuxaCapivara
 
         try {
             $response = PuxaCapivara::withHeaders($headers)
-                ->timeout(20)
+                ->timeout($timeout)
                 ->post(self::buildUrl(self::ENDPOINT_CONSULT), [
                     'cpf' => Str::replace(['.', '-', ' '], '', $cpf),
                 ]);

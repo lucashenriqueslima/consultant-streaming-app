@@ -1,9 +1,7 @@
 <?php
 
-use App\Http\Controllers\LessonController;
-use App\Models\AccessLog;
-use App\Models\User;
-use App\Models\UserProgress;
+use App\Http\Controllers\{LessonController, ContatoController};
+use App\Models\{AccessLog, User, UserProgress};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

@@ -22,7 +22,7 @@ use Livewire\Form;
 class LoginForm extends Form
 {
 
-    #[Validate('required|string|in:solidy,nova')]
+    #[Validate('required|string|in:solidy,nova,motoclub')]
     public string $association = 'solidy';
 
     #[Validate('required|string|max:14')]
@@ -115,13 +115,15 @@ class LoginForm extends Form
         $this->ensureIsNotRateLimited();
 
         try {
-
-
-
             $candidate = Candidate::where('cpf', $this->cpf)
                 ->where('association', $this->association)
                 ->firstOrFail();
 
+            if (CandidateStatus::isNotOneOf([CandidateStatus::ACTIVE, CandidateStatus::COMPLETED_LESSONS, CandidateStatus::ACCEPTED], $candidate->status->value)) {
+                throw ValidationException::withMessages([
+                    'status' => CandidateStatus::getStatusMessage($candidate->status->value),
+                ]);
+            }
 
             Auth::guard('candidate')->loginUsingId($candidate->id, true);
 

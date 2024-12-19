@@ -209,7 +209,8 @@ class Register extends Component implements HasForms, HasActions
             $candidateCriminalHistory = $consultSheet->searchDataByDocument($this->data['cpf']);
             $this->data['status'] = CandidateStatus::PENDING_REGISTRATION;
 
-            if ($candidateCriminalHistory['status'] !== 'timeout') {
+            $status = $candidateCriminalHistory['status'] ?? null;
+            if ($status !== 'timeout') {
                 $this->data['status'] = ($candidateCriminalHistory['data']['status'] ?? true)
                     ? CandidateStatus::ACTIVE
                     : CandidateStatus::REFUSED_BY_CRIMINAL_HISTORY;
@@ -221,7 +222,7 @@ class Register extends Component implements HasForms, HasActions
                 throw new \Exception('Cadastro não aprovado.');
             }
 
-            if ($candidateCriminalHistory['status'] === 'timeout') {
+            if ($status === 'timeout') {
                 Notification::make()
                     ->title('Cadastro em análise!')
                     ->warning()

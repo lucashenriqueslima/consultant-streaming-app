@@ -34,4 +34,10 @@ class Candidate extends Authenticatable
     {
         return $this->hasMany(CandidateProgress::class);
     }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(CandidateCertificate::class);
+    }
+
 }
