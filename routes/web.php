@@ -11,13 +11,13 @@ Route::get('dashboard', App\Livewire\Consultant\Home::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::get('candidate/dashboard', App\Livewire\Candidate\Home::class)
-    ->middleware(['auth:candidate', 'verified'])
-    ->name('candidate.dashboard');
+Route::middleware(['auth:candidate', 'verified'])->group(function () {
+    Route::get('candidate/dashboard', App\Livewire\Candidate\Home::class)
+        ->name('candidate.dashboard');
 
-Route::get('candidate/certificates', App\Livewire\Candidate\Certificates::class)
-    ->middleware(['auth:candidate', 'verified'])
-    ->name('candidate.certificates');
+    Route::get('candidate/certificates', App\Livewire\Candidate\Certificates::class)
+        ->name('candidate.certificates');
+});
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
