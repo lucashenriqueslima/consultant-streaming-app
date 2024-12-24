@@ -14,6 +14,10 @@ Route::get('dashboard', App\Livewire\Consultant\Home::class)
 Route::middleware(['auth:candidate', 'verified'])
     ->prefix('candidate')
         ->group(function () {
+            Route::get('/login', function () {
+                return redirect()->route('candidate.dashboard');
+            });
+
             Route::get('dashboard', App\Livewire\Candidate\Home::class)
                 ->name('candidate.dashboard');
 
