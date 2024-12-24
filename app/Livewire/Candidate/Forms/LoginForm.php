@@ -119,9 +119,9 @@ class LoginForm extends Form
                 ->where('association', $this->association)
                 ->firstOrFail();
 
-            if (CandidateStatus::isNotOneOf([CandidateStatus::ACTIVE, CandidateStatus::COMPLETED_LESSONS, CandidateStatus::ACCEPTED], $candidate->status->value)) {
+            if (CandidateService::isNotOneOf([CandidateStatus::ACTIVE, CandidateStatus::COMPLETED_LESSONS, CandidateStatus::ACCEPTED], $candidate->status->value)) {
                 throw ValidationException::withMessages([
-                    'status' => CandidateStatus::getStatusMessage($candidate->status->value),
+                    'form.cpf' => $candidate->status->getStatusMessage(),
                 ]);
             }
 

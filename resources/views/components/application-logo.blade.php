@@ -1,1 +1,1 @@
-<img src="{{ asset('assets/img/logo.png') }}" width="200" alt="Logo Growth">
+<img src="{{ asset('assets/img/GrowthFlixLogo.png') }}" width="200" alt="Logo Growth">

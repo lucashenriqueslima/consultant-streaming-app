@@ -51,21 +51,15 @@ enum CandidateStatus: string implements HasLabel, HasColor, HasIcon
         };
     }
 
-    public static function getStatusMessage(string $status): string
+    public function getStatusMessage(): string
     {
-        return match ($status) {
+        return match ($this) {
             self::ACTIVE => 'Candidato está ativo e pode prosseguir.',
             self::COMPLETED_LESSONS => 'Candidato completou as lições.',
             self::ACCEPTED => 'Candidato foi aceito.',
             self::PENDING_REGISTRATION => 'Sua conta ainda está pendente, verifique a sua caixa de email.',
-            self::REFUSED_BY_CRIMINAL_HISTORY => 'Seu cadastro não foi aceito no processo automático, para saber mais, entre em contato com um suporte..',
-            default => 'Status desconhecido.',
+            self::REFUSED_BY_CRIMINAL_HISTORY => 'Seu cadastro não foi aceito no processo automático, para saber mais, entre em contato com um suporte.',
+            self::REFUSED_ON_TEST => 'Seu cadastro foi recusado no teste.',
         };
-    }
-
-    public static function isNotOneOf(array $statuses, string $status): bool
-    {
-        $statusValues = array_map(fn($statusObject) => $statusObject->value, $statuses);
-        return !in_array($status, $statusValues);
     }
 }

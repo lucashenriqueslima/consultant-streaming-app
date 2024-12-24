@@ -6,19 +6,21 @@ use App\Services\PuxaCapivara\ConsultSheet;
 use App\Mail\CandidateStatusActive;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Candidate;
+use App\Notifications\RegisterSendNotifications;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class ProcessPuxaCapivaraJob
+class ProcessPuxaCapivaraJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
-    protected $candidate;
-    private string $status = CandidateStatus::PENDING_REGISTRATION;
+    protected Candidate $candidate;
+    private string $status;
 
     /**
      * Create a new job instance.
@@ -34,22 +36,35 @@ class ProcessPuxaCapivaraJob
     public function handle(ConsultSheet $ConsultSheet)
     {
         try {
-            $candidateCriminalHistory = $ConsultSheet->searchDataByDocument($this->candidate->cpf, timeout: 999);
 
-            if (!isset($candidateCriminalHistory['success'])) {
-                throw new \Exception('Erro ao processar a consulta da capivara, chave "success" não encontrada');
+            Log::info(__FILE__ . " - Iniciando consulta na PuxaCapivara", ['cpf' => $this->candidate->cpf]);
+
+            $candidateCriminalHistory = $ConsultSheet->searchDataByDocument($this->candidate->cpf, timeout: 600);
+
+            Log::info(__FILE__ . " - Resposta completa da consulta", [
+                'cpf' => $this->candidate->cpf,
+                'response' => $candidateCriminalHistory,
+            ]);
+
+            if (!isset($candidateCriminalHistory['success']) || !is_bool($candidateCriminalHistory['success'])) {
+                Log::error(__FILE__ . " - Resposta inválida da consulta", ['cpf' => $this->candidate->cpf, 'response' => $candidateCriminalHistory]);
+                throw new \Exception('Erro ao processar a consulta da capivara, chave "success" não encontrada ou inválida');
             }
 
             $this->status = ($candidateCriminalHistory['success'])
-                ? CandidateStatus::ACTIVE
-                : CandidateStatus::REFUSED_BY_CRIMINAL_HISTORY;
+                ? CandidateStatus::ACTIVE->value
+                : CandidateStatus::REFUSED_BY_CRIMINAL_HISTORY->value;
 
             $this->candidate->update(['status' => $this->status]);
+            $this->candidate->notify(new RegisterSendNotifications($this->candidate));
 
-            Mail::to($this->candidate->email)->send(new CandidateStatusActive($this->candidate->name));
         } catch (\Throwable $th) {
-            Log::error("Erro ao processar a consulta da capivara para o candidato {$this->candidate->name} - {$th->getMessage()}");
-            $this->release(60);
+            Log::error(__FILE__ . " - Erro ao consultar no PuxaCapivara", [
+                'cpf' => $this->candidate->cpf,
+                'error' => $th->getMessage(),
+                'trace' => $th->getTraceAsString()
+            ]);
+            $this->release(660);
         }
     }
 }

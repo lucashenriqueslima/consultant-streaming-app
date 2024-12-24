@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\DTOs\IlevaConsultantDTO;
+use App\Models\Candidate;
+use App\Services\Ileva\Ileva;
 use App\Services\Ileva\RegisterConsultant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,7 +17,7 @@ class CreateConsultantIlevaJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $candidate;
+    public Candidate $candidate;
 
     public function __construct($candidate)
     {
@@ -27,7 +29,7 @@ class CreateConsultantIlevaJob implements ShouldQueue
         $registerConsultant = new RegisterConsultant();
         $response = $registerConsultant->execute(
             new IlevaConsultantDTO(
-                status:  $this->candidate->status->value,
+                status:  Ileva::ASSOCIATE_PENDING,
                 name:  $this->candidate->name,
                 email:  $this->candidate->email,
                 phone:  $this->candidate->phone,
@@ -41,7 +43,7 @@ class CreateConsultantIlevaJob implements ShouldQueue
             Log::info("Consultor {$this->candidate->email} criado com sucesso no iLeva.");
         } else {
             Log::warning("Falha ao criar consultor {$this->candidate->email} no iLeva. Re-tentando...");
-            $this->release(60);
+            $this->release(360);
         }
     }
 }

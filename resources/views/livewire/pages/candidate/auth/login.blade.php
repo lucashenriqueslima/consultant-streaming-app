@@ -60,8 +60,8 @@ new #[Layout('layouts.guest')] class extends Component
         </div>
         <div class="flex items-center justify-between mt-4">
 
-                <a class="underline text-md text-gray-400 hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800" href="{{ route('candidate.register') }}" wire:navigate>
-                    Ainda não é um consultor?
+                <a class="underline text-md text-gray-400 hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800" href="{{ route('candidate.register') }}" {{-- wire:navigate --}}>
+                    Ainda não é um candidato?
                 </a>
 
 

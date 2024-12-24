@@ -6,9 +6,12 @@ use App\Enums\Association;
 use App\Enums\CandidateStatus;
 use App\Filament\Resources\CandidateResource\Pages;
 use App\Filament\Resources\CandidateResource\RelationManagers;
+use App\Http\Controllers\GoogleCalendarController;
 use App\Models\Candidate;
 use App\Models\Ileva\ConsultantTeamIleva;
+use App\Services\Google\Calendar\GoogleCalendarService;
 use Filament\Forms;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
@@ -18,7 +21,11 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Collection;
+use Filament\Tables\Actions\BulkAction;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Log;
 
 class CandidateResource extends Resource
 {
@@ -111,6 +118,11 @@ class CandidateResource extends Resource
                     ])
                     ->label('Aulas Assistidas')
                     ->sortable(),
+                TextColumn::make('date_of_the_test')
+                    ->label('Data da Prova')
+                    ->since()
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('status')
                     ->label('Status')
                     ->searchable()
@@ -122,7 +134,47 @@ class CandidateResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
-            ->bulkActions([]);
+            ->bulkActions([
+                BulkAction::make('change_user_responsable')
+                    ->label('Marcar horario da prova')
+                    ->icon('heroicon-o-calendar-days')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->form([
+                        DateTimePicker::make('date_of_the_test')
+                            ->label('Data da Prova')
+                            ->required(),
+                    ])
+                    ->action(function (Collection $cadidates, array $data) {
+                        try {
+                            $cadidates->each(function (Candidate $candidate) use ($data) {
+                                $candidate->update(['date_of_the_test' => $data['date_of_the_test']]);
+
+                                $googleCalendarService = new GoogleCalendarService();
+                                $googleCalendarService->createEvent(
+                                    summary: 'Promava agendada',
+                                    description: 'Prova agendada para o candidato ' . $candidate->name,
+                                    startTime: $data['date_of_the_test'],
+                                    endTime: $data['date_of_the_test'],
+                                );
+                            });
+
+                            Notification::make()
+                                ->title('Horário da prova marcado com sucesso!')
+                                ->success()
+                                ->send();
+
+                        } catch (\Exception $e) {
+                            Log::error('Ocorreu um erro ao tentar marcar um horario para a prova!', [$e->getMessage()]);
+
+                            Notification::make()
+                                ->title('Erro ao marcar horário da prova')
+                                ->body('Ocorreu um erro ao tentar marcar um horario para a prova. Tente novamente.')
+                                ->status('danger')
+                                ->send();
+                        }
+                    }),
+            ]);
     }
 
 

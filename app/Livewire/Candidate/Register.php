@@ -9,6 +9,7 @@ use App\Models\Ileva\ConsultantTeamIleva;
 use App\Services\CandidateService;
 use App\Services\PuxaCapivara\ConsultSheet;
 use App\Enums\CandidateStatus;
+use App\Jobs\ProcessPuxaCapivaraJob;
 use Livewire\Component;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Actions\Contracts\HasActions;
@@ -23,6 +24,7 @@ use Filament\Forms\Get;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\On;
 
@@ -34,8 +36,9 @@ class Register extends Component implements HasForms, HasActions
     use InteractsWithActions;
 
     public ?array $data = [];
+    public bool $isProcessing = false;
+    protected Candidate $candidate;
 
-    //mount
     public function mount(): void
     {
         $this->form->fill();
@@ -197,53 +200,65 @@ class Register extends Component implements HasForms, HasActions
     {
         try {
             $this->data = $this->form->getState();
-
             $databaseConnection = Association::from($this->data['association'])->getDatabaseConnection();
 
             if (Candidate::where('cpf', $this->data['cpf'])->exists() ||
                 ConsultantIleva::on($databaseConnection)->where('cpf', $this->data['cpf'])->exists()) {
+                Log::info(__FILE__ . " - CPF ja cadastrado", ['cpf' => $this->data['cpf'], 'status' => ConsultantIleva::on($databaseConnection)->where('cpf', $this->data['cpf'])->exists()]);
                 $this->showCpfAlreadyRegisteredNotification();
                 return;
             }
 
             $candidateCriminalHistory = $consultSheet->searchDataByDocument($this->data['cpf']);
+            $status = $candidateCriminalHistory['status'] ?? null;
+
             $this->data['status'] = CandidateStatus::PENDING_REGISTRATION;
 
-            $status = $candidateCriminalHistory['status'] ?? null;
             if ($status !== 'timeout') {
                 $this->data['status'] = ($candidateCriminalHistory['data']['status'] ?? true)
                     ? CandidateStatus::ACTIVE
                     : CandidateStatus::REFUSED_BY_CRIMINAL_HISTORY;
             }
 
-            $candidate = $candidateService->create($this->data);
+            $this->candidate = $candidateService->create($this->data);
 
             if ($this->data['status'] === CandidateStatus::REFUSED_BY_CRIMINAL_HISTORY) {
                 throw new \Exception('Cadastro não aprovado.');
             }
 
             if ($status === 'timeout') {
+                $this->dispatch('dispatch-consult-sheet');
+
                 Notification::make()
-                    ->title('Cadastro em análise!')
-                    ->warning()
-                    ->persistent()
-                    ->body('Seu cadastro foi realizado, mas estamos analisando algumas informações. Uma confirmação será enviada para o seu email. Por favor, aguarde.')
-                    ->send();
-            } else {
-                Notification::make()
-                    ->title('Candidato cadastrado com sucesso!')
-                    ->success()
-                    ->persistent()
-                    ->body('Clique aqui para acessar sua plataforma.')
-                    ->actions([
-                        Action::make('redirect-to-dashboard')
-                            ->label('Acessar Plataforma')
-                            ->button()
-                            ->color('success')
-                            ->dispatch('redirect-to-dashboard', [$candidate->id])
-                    ])
-                    ->send();
+                ->title('Seu cadastro está aguardando aprovação. Verifique seu e-mail, em breve você receberá uma mensagem de confirmação.')
+                ->warning()
+                ->persistent()
+                ->body('Clique aqui para acessar sua caixa de email.')
+                ->actions([
+                    Action::make('redirect-to-email')
+                        ->label('Caixa de Email')
+                        ->link()
+                        ->color('primary')
+                        ->url('https://gmail.com')
+                ])
+                ->send();
+                return;
             }
+
+            Notification::make()
+                ->title('Candidato Cadastrado com sucesso!')
+                ->success()
+                ->persistent()
+                ->body('Clique aqui para acessar sua plataforma.')
+                ->actions([
+                    Action::make('redirect-to-dashboard')
+                        ->label('Acessar Plataforma')
+                        ->button()
+                        ->color('success')
+                        ->dispatch('redirect-to-dashboard', [$this->candiate->id])
+
+                ])
+                ->send();
         } catch (\Exception $e) {
             Notification::make()
                 ->title('Erro ao cadastrar candidato!')
@@ -254,10 +269,29 @@ class Register extends Component implements HasForms, HasActions
         }
     }
 
-    #[On('redirect-to-dashboard')]
-    public function redirectToDashboard(int $candiateId): void
+    #[On('dispatch-consult-sheet')]
+    public function handleDispatchConsultSheet(): void
     {
-        $authenctication = Auth::guard('candidate')->loginUsingId($candiateId, true);
+        $data = $this->form->getState();
+        $candidate = Candidate::where('cpf', $data['cpf'])->first();
+
+        $status = $candidate->status;
+
+        Log::info(__FILE__ . " - Iniciando processo para consultar no capivara", [
+            'status' => $status,
+            'isPending' => CandidateService::isPendingRegistration($status),
+        ]);
+
+        if (CandidateService::isPendingRegistration($status)) {
+            dispatch(new ProcessPuxaCapivaraJob($candidate));
+            return;
+        }
+    }
+
+    #[On('redirect-to-dashboard')]
+    public function redirectToDashboard(Candidate $id): void
+    {
+        $authenctication = Auth::guard('candidate')->loginUsingId($id, true);
 
         Session::regenerate();
 

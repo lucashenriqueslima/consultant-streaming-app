@@ -15,7 +15,7 @@ class Ileva extends Http
     public const ASSOCIATION_MOTOCLUB = 'motoclube';
 
     public const ASSOCIATE_ACTIVE = 1;
-    public const ASSOCIATE_INACTIVE = 0;
+    public const ASSOCIATE_PENDING = 0;
     public const ASSOCIATE_COMMISSIONED = true;
     public const ASSOCIATE_NOT_COMMISSIONED = false;
 

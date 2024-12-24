@@ -16,6 +16,6 @@ class PuxaCapivara extends Http
      */
     protected static function buildUrl(string $endpoint): string
     {
-        return self::BASE_URL . $endpoint;
+        return rtrim(self::BASE_URL, '/') . '/' . ltrim($endpoint, '/');
     }
 }

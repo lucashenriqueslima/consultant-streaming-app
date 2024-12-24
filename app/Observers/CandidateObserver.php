@@ -2,10 +2,13 @@
 
 namespace App\Observers;
 
-use App\Enums\CandidateStatus;
+use App\Enums\Panel;
 use App\Models\Candidate;
 use App\Jobs\{CreateConsultantIlevaJob, ProcessPuxaCapivaraJob};
+use App\Notifications\RegisterSendNotifications;
+use App\Services\CandidateService;
 use App\Services\Documents\Certificates\GenerateCertificateCandidate;
+use Illuminate\Support\Facades\Log;
 
 class CandidateObserver
 {
@@ -14,9 +17,7 @@ class CandidateObserver
      */
     public function created(Candidate $candidate): void
     {
-        if ($candidate->status == CandidateStatus::PENDING_REGISTRATION) {
-            ProcessPuxaCapivaraJob::dispatch($candidate)->onQueue('candidate_' . $candidate->id);
-        }
+        // code here...
     }
 
     /**
@@ -24,12 +25,12 @@ class CandidateObserver
      */
     public function updated(Candidate $candidate): void
     {
-        if ($candidate->isDirty('status') && $candidate->status == CandidateStatus::COMPLETED_LESSONS) {
+        if ($candidate->isDirty('status') && CandidateService::isComplateLessons($candidate->status)) {
 
             $certificateService = new GenerateCertificateCandidate();
-            $certificateService->generateAndSavePdf($candidate);
+            $certificateService->generateAndSavePdf($candidate, Panel::Candidate);
 
-            CreateConsultantIlevaJob::dispatch($candidate);
+            dispatch(new CreateConsultantIlevaJob($candidate));
         }
     }
 

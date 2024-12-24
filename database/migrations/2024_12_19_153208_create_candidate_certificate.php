@@ -11,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('candidate_certificate', function (Blueprint $table) {
+        Schema::create('candidate_certificates', function (Blueprint $table) {
             $table->id();
             $table->foreignId('candidate_id')->constrained()->onDelete('cascade');
+            $table->enum('panel', ['candidate', 'consultant']);
             $table->text('certificate_base64');
             $table->timestamps();
+            $table->unique(['candidate_id', 'panel']);
         });
     }
 
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('candidate_certificate');
+        Schema::dropIfExists('candidate_certificates');
     }
 };

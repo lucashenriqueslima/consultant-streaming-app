@@ -9,7 +9,7 @@ class CandidateCertificate extends Model
 {
     use HasFactory;
 
-    protected $table = 'candidate_certificate';
+    protected $table = 'candidate_certificates';
 
     protected $fillable = [
         'candidate_id',
