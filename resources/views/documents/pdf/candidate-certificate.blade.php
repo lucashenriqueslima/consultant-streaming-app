@@ -1,32 +1,89 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Certificado</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100">
-    <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg border-4 border-blue-600 p-10">
-        <div class="text-center">
-            <h1 class="text-4xl font-bold text-blue-600 uppercase">Certificado de Conclusão</h1>
-            <p class="text-lg text-gray-600 mt-2">Este certificado é concedido a</p>
-            <h2 class="text-3xl font-semibold mt-4 text-gray-800">{{ $name }}</h2>
-            <p class="text-lg text-gray-600 mt-2">
-                Por concluir com sucesso todos os cursos</span>
-            </p>
-        </div>
+    <style>
+        /* Garante que o conteúdo ocupe exatamente o tamanho de um A4 em paisagem */
+        @page {
+            size: 3508px 2480px;
+            margin: 0;
+        }
 
-        <div class="flex justify-between items-center mt-16">
-            <div class="text-center">
-                <p class="text-sm text-gray-600">Data</p>
-                <p class="text-lg font-semibold text-gray-800">{{ date('d/m/Y') }}</p>
-            </div>
-            <div class="text-center">
-                <p class="text-sm text-gray-600">Assinatura</p>
-                <div class="mt-4 border-t-2 border-gray-800 w-48 mx-auto"></div>
-            </div>
-        </div>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(180deg, #030911 0%, #24405C 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3508px;
+            height: 2480px;
+            overflow: hidden;
+            color: white;
+            text-align: center;
+        }
+
+        .certificado {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        .logo-fundo {
+            position: absolute;
+            transform: translate(-40%, -3%);
+            opacity: 0.1;
+            width: 3300px;
+            height: auto;
+        }
+
+        .logo-principal {
+            margin-top: 100px;
+            width: 700px;
+            height: auto;
+        }
+
+        .titulo {
+            font-size: 300px;
+            font-weight: bold;
+            margin: 150px 0 130px;
+        }
+
+        .texto {
+            font-size: 96px;
+            line-height: 1.5;
+            margin: 0 300px;
+        }
+
+        .texto span {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="certificado">
+        <!-- Logo ao fundo -->
+        <img src="{{ asset('assets/img/logo.png') }}" alt="Logo Fundo" class="logo-fundo">
+
+        <!-- Logo principal -->
+        <img src="{{ asset('assets/img/GrowthFlixLogo.png') }}" alt="GrowthFlix Logo" class="logo-principal">
+
+        <!-- Título -->
+        <h1 class="titulo">CERTIFICADO</h1>
+
+        <!-- Texto -->
+        <p class="texto">
+            Certificamos a conclusão de <span> {{ $name }} </span> na GROWTH FLIX, plataforma de cursos online, se
+            tornando um especialista em proteção veicular, demonstrando engajamento e interesse no enriquecimento de
+            conhecimento.
+        </p>
     </div>
 </body>
+
 </html>

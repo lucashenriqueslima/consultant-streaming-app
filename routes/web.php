@@ -32,8 +32,8 @@ Route::middleware(['auth:admin', 'verified'])->group(function () {
     });
 
     Route::prefix('admin/calendar')->group(function () {
-        Route::get('/', [GoogleCalendarController::class, 'index'])->name('calendar.index'); // Listar eventos
-        Route::post('/event', [GoogleCalendarController::class, 'createEvent'])->name('calendar.create'); // Criar evento
+        Route::get('/', [GoogleCalendarController::class, 'index'])->name('calendar.index');
+        Route::post('/event', [GoogleCalendarController::class, 'createEvent'])->name('calendar.create');
     });
 });
 
