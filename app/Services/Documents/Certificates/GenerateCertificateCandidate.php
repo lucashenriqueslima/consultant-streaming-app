@@ -25,14 +25,15 @@ class GenerateCertificateCandidate
 
         $pdf = Pdf::loadView('documents.pdf.candidate-certificate', [
             'name' => $candidate->name,
-        ])->setPaper('a4', 'landscape')
-          ->setOption('enable-local-file-access', true)
-          ->setOption('margin-top', 0)
-          ->setOption('margin-right', 0)
-          ->setOption('margin-bottom', 0)
-          ->setOption('margin-left', 0)
-          ->setOption('encoding', 'UTF-8')
-          ->setOption('enable-html5-parser', true);
+        ])
+            ->setPaper('a4', 'landscape')
+            ->setOption('enable-local-file-access', true)
+            ->setOption('margin-top', 0)
+            ->setOption('margin-right', 0)
+            ->setOption('margin-bottom', 0)
+            ->setOption('margin-left', 0)
+            ->setOption('encoding', 'UTF-8')
+            ->setOption('enable-html5-parser', true);
 
         Log::info("PDF generated for candidate", ['pdf' => base64_encode($pdf->output())]);
 

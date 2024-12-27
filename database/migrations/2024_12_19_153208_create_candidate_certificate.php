@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('candidate_id')->constrained()->onDelete('cascade');
             $table->enum('panel', ['candidate', 'consultant']);
-            $table->text('certificate_base64');
+            $table->longText('certificate_base64');
             $table->timestamps();
             $table->unique(['candidate_id', 'panel']);
         });

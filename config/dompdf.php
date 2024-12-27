@@ -266,7 +266,8 @@ return [
          *
          * @var bool
          */
-        'enable_remote' => false,
+        'enable_remote' => true,
+        'enable_local_file_access' => true,
 
         /**
          * List of allowed remote hosts
