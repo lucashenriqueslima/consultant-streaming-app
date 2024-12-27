@@ -8,11 +8,14 @@ use Livewire\Volt\Volt;
 Route::middleware('guest')->group(function () {
     Volt::route('login', 'pages.consultant.auth.login')
         ->name('login');
+
+    Volt::route('candidate/login', 'pages.candidate.auth.login')
+        ->name('candidate.login');
 });
 
 Route::prefix('candidate')->group(function () {
     Route::middleware('guest')->group(function () {
-        Route::get('/', function() {
+        Route::get('/', function () {
             return Redirect::route('candidate.login');
         });
 

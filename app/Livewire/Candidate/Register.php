@@ -296,7 +296,6 @@ class Register extends Component implements HasForms, HasActions
         $authenctication = Auth::guard('candidate')->loginUsingId($id, true);
 
         Session::regenerate();
-
         $this->redirectIntended(default: route('candidate.dashboard', absolute: false), navigate: true);
     }
 

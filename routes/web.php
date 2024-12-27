@@ -13,17 +13,15 @@ Route::get('dashboard', App\Livewire\Consultant\Home::class)
 
 Route::middleware(['auth:candidate', 'verified'])
     ->prefix('candidate')
-        ->group(function () {
-            Route::get('/login', function () {
-                return redirect()->route('candidate.dashboard');
-            });
+    ->group(function () {
 
-            Route::get('dashboard', App\Livewire\Candidate\Home::class)
-                ->name('candidate.dashboard');
 
-            Route::get('certificates', App\Livewire\Candidate\Certificates::class)
-                ->name('candidate.certificates');
-});
+        Route::get('dashboard', App\Livewire\Candidate\Home::class)
+            ->name('candidate.dashboard');
+
+        Route::get('certificates', App\Livewire\Candidate\Certificates::class)
+            ->name('candidate.certificates');
+    });
 
 Route::middleware(['auth:admin', 'verified'])->group(function () {
     Route::prefix('admin/google')->group(function () {
@@ -39,6 +37,10 @@ Route::middleware(['auth:admin', 'verified'])->group(function () {
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
+});
+
+Route::get('candidate/login', function () {
+    return redirect()->route('candidate.dashboard');
 });
 
 Route::get('/template-email', function () {
