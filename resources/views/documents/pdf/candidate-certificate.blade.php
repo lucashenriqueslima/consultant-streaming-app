@@ -16,7 +16,8 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background: linear-gradient(180deg, #030911 0%, #24405C 100%);
+            background: url('{{ public_path('assets/img/gradient.png') }}') no-repeat center center;
+            background-size: cover;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -69,17 +70,17 @@
 <body>
     <div class="certificado">
         <!-- Logo ao fundo -->
-        <img src="{{ asset('assets/img/logo.png') }}" alt="Logo Fundo" class="logo-fundo">
+        <img src="{{ public_path('assets/img/logo.png') }}" alt="Logo Fundo" class="logo-fundo">
 
         <!-- Logo principal -->
-        <img src="{{ asset('assets/img/GrowthFlixLogo.png') }}" alt="GrowthFlix Logo" class="logo-principal">
+        <img src="{{ public_path('assets/img/GrowthFlixLogo.png') }}" alt="GrowthFlix Logo" class="logo-principal">
 
         <!-- Título -->
         <h1 class="titulo">CERTIFICADO</h1>
 
         <!-- Texto -->
         <p class="texto">
-            Certificamos a conclusão de <span> {{ $name }} </span> na GROWTH FLIX, plataforma de cursos online, se
+            Certificamos a conclusão de <span> {{ $name ?? "" }} </span> na GROWTH FLIX, plataforma de cursos online, se
             tornando um especialista em proteção veicular, demonstrando engajamento e interesse no enriquecimento de
             conhecimento.
         </p>
