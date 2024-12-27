@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold ml-10 text-xl text-gray-100 leading-tight">
-            Home
+            Cursos
         </h2>
     </x-slot>
 
@@ -30,8 +30,8 @@
                         >
                             <img src="{{ $this->getStorageUrl($lesson->image) }}" alt="" class="scale-110 transition-all duration-300 hover:scale-100">
                             <div class="absolute flex items-center top-5 right-3 text-center font-bold text-lg text-white">
-                                {{ svg($this->getCandidateProgressStatusIcon($lesson->userProgress?->where('lesson_id', $lesson->id)->first()?->is_completed), 'h-6 w-6 mr-1') }}
-                                <p> {{ $this->getCandidateProgressStatusLabel($lesson->userProgress?->where('lesson_id', $lesson->id)->first()?->is_completed) }} </p>
+                                {{ svg($this->getCandidateProgressStatusIcon($lesson->candidateProgress?->where('lesson_id', $lesson->id)->first()?->is_completed), 'h-6 w-6 mr-1') }}
+                                <p> {{ $this->getCandidateProgressStatusLabel($lesson->candidateProgress?->where('lesson_id', $lesson->id)->first()?->is_completed) }} </p>
                             </div>
                             <div class="absolute  bottom-2.5 left-0 right-0 text-center font-bold text-gray-100 p-2">
                                 {{ $lesson->title }}

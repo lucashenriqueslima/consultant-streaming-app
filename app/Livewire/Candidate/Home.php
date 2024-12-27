@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\Attributes\On;
-use Livewire\Attributes\Layout;
 
 
 class Home extends Component
@@ -37,17 +36,13 @@ class Home extends Component
             ->where('panel', Panel::Candidate)
             ->get();
 
-        $this->lessonsCount =
-            Course::where('panel', Panel::Candidate)
+        $this->lessonsCount = Course::where('panel', Panel::Candidate)
             ->withCount('lessons')
-            ->first()
-            ?->lessons_count;
+            ->get()
+            ->sum('lessons_count');
 
         $this->hasCompletedAllLessons = $this->hasCompletedAllLessons();
     }
-
-
-
 
     #[On('lessonStarted')]
     public function createCandidateProgressIfDontExist(string $lessonId): void
@@ -85,32 +80,27 @@ class Home extends Component
             return true;
         }
 
-        if (
-            !$this->hasCompletedAllLessons || CandidateProgress::where('candidate_id', Auth::guard('candidate')->id())
-            ->where('is_completed', operator: true)
-            ->count() != $this->lessonsCount
-        ) {
-            return false;
+        $completedLessonsCount = CandidateProgress::where('candidate_id', Auth::guard('candidate')->id())
+            ->where('is_completed', true)
+            ->count();
+
+        if ($completedLessonsCount == $this->lessonsCount) {
+            $candidate = Candidate::find(Auth::guard('candidate')->id());
+
+            if ($candidate->status !== CandidateStatus::COMPLETED_LESSONS) {
+                $candidateService = new CandidateService();
+                $candidateService->update($candidate, ['status' => CandidateStatus::COMPLETED_LESSONS]);
+            }
+
+            return true;
         }
 
-        if (!$this->hasCompletedAllLessons) {
-            $candidateService = new CandidateService();
-
-            $candidateService->update(
-                Candidate::find(Auth::guard('candidate')->id()),
-                ['status' => CandidateStatus::COMPLETED_LESSONS]
-            );
-        }
-
-        $this->hasCompletedAllLessons = true;
-
-        return true;
+        return false;
     }
+
 
     public function showAllLessonsCompletedNotification(): void
     {
-
-
         Notification::make()
             ->title('Parabéns, todas as aulas foram concluidas!')
             ->success()

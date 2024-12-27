@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'token' => env('ILEVA_NOVA_TOKEN'),
+    'token' => env('ILEVA_NOVA_API_TOKEN'),
 ];

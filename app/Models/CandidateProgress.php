@@ -9,6 +9,14 @@ class CandidateProgress extends Model
 {
     protected $table = 'candidate_progress';
 
+    protected $fillable = [
+        'candidate_id',
+        'lesson_id',
+        'started_at',
+        'completed_at',
+        'is_completed',
+    ];
+
     protected $casts = [
         'started_at' => 'datetime',
         'completed_at' => 'datetime',

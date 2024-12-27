@@ -30,8 +30,8 @@ class ContatoController extends Controller
         }
 
         try {
-            Mail::to(Configs::where('key', 'MAIL_FROM_ADDRESS')->first()->value, Configs::where('key', 'MAIL_FROM_NAME')->first()->value)->send(new Contact([
-                'from' => Configs::where('key', 'MAIL_USERNAME')->first()->value,
+            Mail::to(config('mail.from.address'), config('mail.from.name'))->send(new Contact([
+                'from' => config('mail.mailers.smtp.username'),
                 'name' => $request->name,
                 'email' => $request->email,
                 'subject' => $request->subject,
