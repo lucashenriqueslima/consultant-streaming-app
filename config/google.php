@@ -22,5 +22,8 @@ return [
         'id' => env('GOOGLE_CLIENT_ID'),
         'secret' => env('GOOGLE_CLIENT_SECRET')
     ],
-    'callback_url' => env('GOOGLE_REDIRECT_URI')
+    'callback_url' => env('GOOGLE_REDIRECT_URI'),
+    'calendar' => [
+        'is_ativo' => false
+    ],
 ];

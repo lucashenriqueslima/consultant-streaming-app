@@ -38,8 +38,13 @@ class ProcessPuxaCapivaraJob implements ShouldQueue
         try {
 
             Log::info(__FILE__ . " - Iniciando consulta na PuxaCapivara", ['cpf' => $this->candidate->cpf]);
+            Log::info('Association: ', $this->candidate->association);
 
-            $candidateCriminalHistory = $ConsultSheet->searchDataByDocument($this->candidate->cpf, timeout: 600);
+            $candidateCriminalHistory = $ConsultSheet->searchDataByDocument(
+                cpf: $this->candidate->cpf,
+                association: $this->candidate->association,
+                timeout: 600
+            );
 
             Log::info(__FILE__ . " - Resposta completa da consulta", [
                 'cpf' => $this->candidate->cpf,
