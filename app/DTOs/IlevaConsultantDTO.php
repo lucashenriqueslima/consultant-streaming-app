@@ -2,12 +2,8 @@
 
 namespace App\DTOs;
 
-use App\Enums\Association;
-
 class IlevaConsultantDTO
 {
-    //'status', 'name', 'email', 'phone', 'cpf', 'team_code'
-
     public function __construct(
         public string $status,
         public string $name,

@@ -2,10 +2,13 @@
 
 namespace App\Observers;
 
-use App\DTOs\IlevaConsultantDTO;
-use App\Enums\CandidateStatus;
+use App\Enums\Panel;
 use App\Models\Candidate;
-use App\Services\Ileva\RegisterConsultant;
+use App\Jobs\{CreateConsultantIlevaJob, ProcessPuxaCapivaraJob};
+use App\Notifications\RegisterSendNotifications;
+use App\Services\CandidateService;
+use App\Services\Documents\Certificates\GenerateCertificateCandidate;
+use Illuminate\Support\Facades\Log;
 
 class CandidateObserver
 {
@@ -14,7 +17,7 @@ class CandidateObserver
      */
     public function created(Candidate $candidate): void
     {
-        //
+        // code here...
     }
 
     /**
@@ -22,19 +25,12 @@ class CandidateObserver
      */
     public function updated(Candidate $candidate): void
     {
-        $registerConsultant = new RegisterConsultant();
-        if ($candidate->isDirty('status') && $candidate->status == CandidateStatus::ACCEPTED) {
-            $registerConsultant->execute(
-                new IlevaConsultantDTO(
-                    status: $candidate->status->value,
-                    name: $candidate->name,
-                    email: $candidate->email,
-                    phone: $candidate->phone,
-                    cpf: $candidate->cpf,
-                    team_code: $candidate->ileva_team_id,
-                    association: 'solidy',
-                )
-            );
+        if ($candidate->isDirty('status') && CandidateService::isComplateLessons($candidate->status)) {
+
+            $certificateService = new GenerateCertificateCandidate();
+            $certificateService->generateAndSavePdf($candidate, Panel::Candidate);
+
+            dispatch(new CreateConsultantIlevaJob($candidate));
         }
     }
 

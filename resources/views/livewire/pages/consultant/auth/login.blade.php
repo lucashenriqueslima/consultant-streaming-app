@@ -29,6 +29,7 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
@@ -74,13 +75,16 @@ new #[Layout('layouts.guest')] class extends Component
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <div class="flex items-center justify-between mt-4">
             @if (Route::has('password.request'))
                 <a class="underline text-sm text-gray-400 hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800" href="{{ route('password.request') }}" wire:navigate>
                     Esqueceu seu Email?
                 </a>
+            @else
+                <a class="underline text-md text-gray-400 hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800" href="{{ route('candidate.register') }}" {{-- wire:navigate --}}>
+                    Ainda não é um consultor?
+                </a>
             @endif
-
             <x-primary-button class="ms-3">
                 {{ __('Log in') }}
             </x-primary-button>

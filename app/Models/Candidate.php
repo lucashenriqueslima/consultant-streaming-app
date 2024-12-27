@@ -24,6 +24,7 @@ class Candidate extends Authenticatable
         'status' => CandidateStatus::class,
         'date_of_birth' => 'date',
         'token_expires_at' => 'datetime',
+        'date_of_the_test' => 'datetime',
     ];
 
     protected $hidden = [
@@ -34,4 +35,10 @@ class Candidate extends Authenticatable
     {
         return $this->hasMany(CandidateProgress::class);
     }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(CandidateCertificate::class);
+    }
+
 }
