@@ -37,7 +37,7 @@
 
         .logo-fundo {
             position: absolute;
-            transform: translate(-40%, -3%);
+            transform: translate(3%, -3%);
             opacity: 0.1;
             width: 3300px;
             height: auto;
