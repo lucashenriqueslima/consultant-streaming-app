@@ -23,7 +23,7 @@ new #[Layout('layouts.guest')] class extends Component
 
         Session::regenerate();
 
-        $this->redirectIntended(default: route('candidate.dashboard', absolute: false), navigate: true);
+        $this->redirectRoute('candidate.dashboard', navigate: true);
     }
 }; ?>
 
