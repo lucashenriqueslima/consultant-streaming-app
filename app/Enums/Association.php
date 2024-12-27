@@ -35,4 +35,13 @@ enum Association: string
             self::Motoclub => config('ileva_motoclub.token'),
         };
     }
+
+    public function getApiTokenPuxaCapivara(): string
+    {
+        return match ($this) {
+            self::Solidy => config('puxa_capivara.solidy.token'),
+            self::Nova => config('puxa_capivara.nova.token'),
+            self::Motoclub => config('puxa_capivara.motoclub.token'),
+        };
+    }
 }

@@ -37,7 +37,7 @@ class Register extends Component implements HasForms, HasActions
 
     public ?array $data = [];
     public bool $isProcessing = false;
-    protected Candidate $candidate;
+    public Candidate $candidate;
 
     public function mount(): void
     {
@@ -204,12 +204,15 @@ class Register extends Component implements HasForms, HasActions
 
             if (Candidate::where('cpf', $this->data['cpf'])->exists() ||
                 ConsultantIleva::on($databaseConnection)->where('cpf', $this->data['cpf'])->exists()) {
-                Log::info(__FILE__ . " - CPF ja cadastrado", ['cpf' => $this->data['cpf'], 'status' => ConsultantIleva::on($databaseConnection)->where('cpf', $this->data['cpf'])->exists()]);
                 $this->showCpfAlreadyRegisteredNotification();
                 return;
             }
 
-            $candidateCriminalHistory = $consultSheet->searchDataByDocument($this->data['cpf']);
+            $candidateCriminalHistory = $consultSheet->searchDataByDocument(
+                cpf: $this->data['cpf'],
+                association: Association::from($this->data['association'])
+            );
+
             $status = $candidateCriminalHistory['status'] ?? null;
 
             $this->data['status'] = CandidateStatus::PENDING_REGISTRATION;
@@ -255,7 +258,7 @@ class Register extends Component implements HasForms, HasActions
                         ->label('Acessar Plataforma')
                         ->button()
                         ->color('success')
-                        ->dispatch('redirect-to-dashboard', [$this->candiate->id])
+                        ->dispatch('redirect-to-dashboard', [$this->candidate->id])
 
                 ])
                 ->send();
@@ -272,10 +275,7 @@ class Register extends Component implements HasForms, HasActions
     #[On('dispatch-consult-sheet')]
     public function handleDispatchConsultSheet(): void
     {
-        $data = $this->form->getState();
-        $candidate = Candidate::where('cpf', $data['cpf'])->first();
-
-        $status = $candidate->status;
+        $status = $this->candidate->status;
 
         Log::info(__FILE__ . " - Iniciando processo para consultar no capivara", [
             'status' => $status,
@@ -283,7 +283,7 @@ class Register extends Component implements HasForms, HasActions
         ]);
 
         if (CandidateService::isPendingRegistration($status)) {
-            dispatch(new ProcessPuxaCapivaraJob($candidate));
+            dispatch(new ProcessPuxaCapivaraJob($this->candidate));
             return;
         }
     }
