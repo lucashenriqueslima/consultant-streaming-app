@@ -150,13 +150,15 @@ class CandidateResource extends Resource
                             $cadidates->each(function (Candidate $candidate) use ($data) {
                                 $candidate->update(['date_of_the_test' => $data['date_of_the_test']]);
 
-                                $googleCalendarService = new GoogleCalendarService();
-                                $googleCalendarService->createEvent(
-                                    summary: 'Promava agendada',
-                                    description: 'Prova agendada para o candidato ' . $candidate->name,
-                                    startTime: $data['date_of_the_test'],
-                                    endTime: $data['date_of_the_test'],
-                                );
+                                if (config('google.calendar.is_ativo')) {
+                                    $googleCalendarService = new GoogleCalendarService();
+                                    $googleCalendarService->createEvent(
+                                        summary: 'Promava agendada',
+                                        description: 'Prova agendada para o candidato ' . $candidate->name,
+                                        startTime: $data['date_of_the_test'],
+                                        endTime: $data['date_of_the_test'],
+                                    );
+                                }
                             });
 
                             Notification::make()

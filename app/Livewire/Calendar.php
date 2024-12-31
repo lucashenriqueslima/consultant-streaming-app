@@ -22,7 +22,6 @@ class Calendar extends Component
 
     public function createEvent()
     {
-        dd('Testeee');
         $this->validate();
 
         $client = new Client();

@@ -2,6 +2,7 @@
 
 namespace App\Services\PuxaCapivara;
 
+use App\Enums\Association;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -20,12 +21,13 @@ class ConsultSheet extends PuxaCapivara
      *      mensagem: mensagem de erro ou os dados da pessoa caso tenha sido encontrado.
      *      detalhes: detalhes da consulta. Caso tenha ocorrido um erro, este campo conter  o erro.
      */
-    public function searchDataByDocument(string $cpf, int $timeout = 10): mixed
+    public function searchDataByDocument(string $cpf, Association $association, int $timeout = 10): mixed
     {
+        $tokenAuth = $association->getApiTokenPuxaCapivara();
         $headers = [
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . config('puxa_capivara.token'),
+            'Authorization' => 'Bearer ' . $tokenAuth,
         ];
 
         try {
