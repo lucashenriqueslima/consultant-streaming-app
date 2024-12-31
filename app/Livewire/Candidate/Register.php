@@ -202,8 +202,12 @@ class Register extends Component implements HasForms, HasActions
             $this->data = $this->form->getState();
             $databaseConnection = Association::from($this->data['association'])->getDatabaseConnection();
 
-            if (Candidate::where('cpf', $this->data['cpf'])->exists() ||
-                ConsultantIleva::on($databaseConnection)->where('cpf', $this->data['cpf'])->exists()) {
+            if (
+                Candidate::where('cpf', $this->data['cpf'])->exists() ||
+                ConsultantIleva::on($databaseConnection)->where('cpf', $this->data['cpf'])->exists()
+            ) {
+                Log::info(__FILE__ . " - CPF ja cadastrado", ['cpf' => $this->data['cpf'], 'status' => ConsultantIleva::on($databaseConnection)->where('cpf', $this->data['cpf'])->exists()]);
+
                 $this->showCpfAlreadyRegisteredNotification();
                 return;
             }
@@ -233,18 +237,18 @@ class Register extends Component implements HasForms, HasActions
                 $this->dispatch('dispatch-consult-sheet');
 
                 Notification::make()
-                ->title('Seu cadastro está aguardando aprovação. Verifique seu e-mail, em breve você receberá uma mensagem de confirmação.')
-                ->warning()
-                ->persistent()
-                ->body('Clique aqui para acessar sua caixa de email.')
-                ->actions([
-                    Action::make('redirect-to-email')
-                        ->label('Caixa de Email')
-                        ->link()
-                        ->color('primary')
-                        ->url('https://gmail.com')
-                ])
-                ->send();
+                    ->title('Seu cadastro está aguardando aprovação. Verifique seu e-mail, em breve você receberá uma mensagem de confirmação.')
+                    ->warning()
+                    ->persistent()
+                    ->body('Clique aqui para acessar sua caixa de email.')
+                    ->actions([
+                        Action::make('redirect-to-email')
+                            ->label('Caixa de Email')
+                            ->link()
+                            ->color('primary')
+                            ->url('https://gmail.com')
+                    ])
+                    ->send();
                 return;
             }
 
@@ -294,8 +298,7 @@ class Register extends Component implements HasForms, HasActions
         $authenctication = Auth::guard('candidate')->loginUsingId($id, true);
 
         Session::regenerate();
-
-        $this->redirectIntended(default: route('candidate.dashboard', absolute: false), navigate: true);
+        $this->redirectRoute('candidate.dashboard', navigate: true);
     }
 
     public function render()
